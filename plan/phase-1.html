@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Classroom Linux Pilot - Phase 1: Preparation</title>
+    <!-- Common Styles for all phases -->
+    <link rel="stylesheet" href="phases.css">
+    <!-- Specific styles for Phase 1 -->
+    <link rel="stylesheet" href="phase-1.css">
+    <script src="phases.js" defer></script>
+    <script src="phase-1.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Phase 1: Preparation</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Back to Overview</a></li>
+                <li><a href="phase-2.html">Phase 2</a></li>
+                <li><a href="phase-3.html">Phase 3</a></li>
+                <li><a href="phase-4.html">Phase 4</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="introduction">
+            <h2>Overview of Phase 1</h2>
+            <p>
+                In this phase, you will lay the groundwork for the entire pilot project. 
+                You will isolate the test environment, prepare and integrate a central file server with Active Directory, 
+                ensure you can quickly deploy Debian via PXE, and set up an Ansible environment 
+                for automated configuration. By the end of this phase, all prerequisites should be in place, 
+                allowing you to smoothly transition into the implementation phase.
+            </p>
+        </section>
+
+        <!-- Step 1: Network Isolation -->
+        <section class="step-box">
+            <h3>Step 1: Network Isolation (VLAN/Subnet)</h3>
+            <p>
+                Before you begin deploying machines, ensure that they are isolated from the main school network. 
+                Create a dedicated VLAN or subnet (192.168.8.0/24) that will host all 20 pilot machines. 
+                This ensures minimal interference with existing infrastructure and makes testing easier.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Configure a VLAN/subnet (e.g., VLAN ID on your switch and DHCP scope for 192.168.8.0/24).  
+                    <br><em>Reference:</em>  
+                    <a href="https://wiki.debian.org/NetworkConfiguration" target="_blank">Debian Network Configuration Guide</a>  
+                    <a href="https://www.cisco.com/c/en/us/support/docs/lan-switching/vlan-technology" target="_blank">Cisco VLAN Configuration Guide</a>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Ensure DHCP is correctly set up to provide IPs to the test machines on this subnet.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test connectivity: From one test machine, ping the PXE server (192.168.8.3) and verify internet access if required.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 2: Central File Server Setup -->
+        <section class="step-box">
+            <h3>Step 2: Central File Server (Samba/Winbind)</h3>
+            <p>
+                Set up a Debian-based file server to host user home directories. Integrate it with Active Directory using Samba and Winbind. 
+                This ensures domain users can log in seamlessly, with their home directories available on any machine.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Install required packages:  
+                    <code>sudo apt update && sudo apt install samba winbind libpam-winbind libnss-winbind</code>  
+                    <a href="https://wiki.samba.org/index.php/Main_Page" target="_blank">Samba Official Documentation</a>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Configure <code>/etc/samba/smb.conf</code> for your AD realm.  
+                    Set <code>security = ads</code>, specify <code>workgroup</code> and <code>realm</code>.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Join the server to the AD domain:  
+                    <code>sudo net ads join -U administrator</code> and test with  
+                    <code>wbinfo -u</code> and <code>getent passwd</code> to confirm domain user visibility.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Configure a [homes] share in <code>/etc/samba/smb.conf</code> to serve user home directories.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Restart Samba and Winbind:  
+                    <code>sudo systemctl restart smbd winbind</code>  
+                    Test access to the share from a test client: <code>smbclient -L //fileserver</code>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 3: Debian Installation via PXE -->
+        <section class="step-box">
+            <h3>Step 3: Debian Installation via PXE (192.168.8.3)</h3>
+            <p>
+                With the network ready, use the existing PXE server at 192.168.8.3 to install Debian 
+                on all 20 machines identically. PXE boot simplifies deployment and ensures all systems 
+                start from a standard baseline.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Place Debian netboot files on the PXE server (usually in /var/lib/tftpboot/ or similar TFTP directory).
+                    <a href="https://wiki.debian.org/PXEBootInstall" target="_blank">Debian PXE Boot Documentation</a>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Boot one test machine via PXE and run through a Debian network installation.  
+                    Confirm it obtains an IP from your new VLAN and can resolve the file server’s hostname.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    After a successful test installation, you can replicate this process for all 20 machines.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 4: Configuration Management (Ansible) -->
+        <section class="step-box">
+            <h3>Step 4: Configuration Management (Ansible)</h3>
+            <p>
+                Install and configure Ansible on a control machine (e.g., your admin workstation). 
+                This lets you manage all pilot systems centrally, ensuring consistent configuration of Samba, Winbind, Rclone, and other dependencies.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Install Ansible:  
+                    <code>sudo apt install ansible</code>  
+                    <a href="https://docs.ansible.com/" target="_blank">Ansible Official Documentation</a>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Create an inventory file (<code>inventory.ini</code>) listing all 20 machines by IP or hostname.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Set up SSH key-based authentication: <code>ssh-copy-id</code> to each target machine.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test connectivity: <code>ansible all -m ping -i inventory.ini</code> should return a success response for all hosts.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 5: Pre-Deployment Verification -->
+        <section class="step-box">
+            <h3>Step 5: Pre-Deployment Verification</h3>
+            <p>
+                Before moving to Phase 2, verify all groundwork is solid. Check network isolation, Samba/AD integration, 
+                basic file access, and OneDrive connectivity via Rclone if you’ve chosen to test it early.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Double-check VLAN isolation: Ensure pilot machines cannot access the main network resources unless intended.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Confirm Samba/AD integration: Run <code>wbinfo -u</code> and <code>getent passwd</code> on the file server and a pilot machine.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    (Optional) Test Rclone with OneDrive on one machine:  
+                    <a href="https://rclone.org/onedrive/" target="_blank">Rclone OneDrive Integration Guide</a>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Document any issues found and resolve them now to ensure a smooth start to Phase 2.
+                </li>
+            </ul>
+        </section>
+
+        <section id="comments">
+            <h2>Notes and Comments</h2>
+            <p>Use the space below to record any phase-specific notes, issues encountered, or reminders.</p>
+            <textarea id="comments-box" placeholder="Write your Phase 1 notes here..."></textarea>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Classroom Linux Pilot - Phase 1</p>
+    </footer>
+</body>
+</html>
+

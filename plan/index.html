@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Classroom Linux Pilot - Overview</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Classroom Linux Pilot: Overview</h1>
+        <nav>
+            <ul>
+                <li><a href="phase-1.html">Phase 1: Preparation</a></li>
+                <li><a href="phase-2.html">Phase 2: Implementation</a></li>
+                <li><a href="phase-3.html">Phase 3: Testing</a></li>
+                <li><a href="phase-4.html">Phase 4: Evaluation</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Project Overview</h2>
+            <p>
+                This pilot project aims to transition a classroom of 20 machines to Debian Linux, 
+                integrated with Microsoft Active Directory (AD) and using open-source tools for file access. 
+                Each machine will authenticate against AD, mount centrally hosted home directories, and 
+                provide access to cloud storage (OneDrive) via open-source solutions. The environment will 
+                be managed and configured through automation (e.g. Ansible) for consistency.
+            </p>
+            <p>
+                The following phases outline the entire process from initial setup to evaluation. 
+                Each phase has its own dedicated page with detailed instructions, checkboxes, and a 
+                comment section. Use the links in the navigation bar to access each phase’s page.
+            </p>
+        </section>
+
+        <section>
+            <h2>Phases of the Pilot</h2>
+            <p>
+                Each phase builds on the previous one, ensuring a structured approach to deploying, testing, 
+                and evaluating the new environment.
+            </p>
+
+            <article class="phase-box">
+                <h3>Phase 1: Preparation</h3>
+                <p><strong>Goal:</strong> Set the foundation for the pilot by isolating the test environment, preparing servers, and establishing automation frameworks.</p>
+                <p><strong>Key Steps Include:</strong></p>
+                <ul>
+                    <li>Configure a dedicated subnet (192.168.8.0/24) and VLAN for the 20 pilot machines.</li>
+                    <li>Set up a central file server using Samba/Winbind integrated with AD.</li>
+                    <li>Use a PXE server (192.168.8.3) to install Debian on all machines from the same image.</li>
+                    <li>Install and configure Ansible on a control machine to manage all 20 Debian systems.</li>
+                    <li>Verify basic connectivity, domain integration, and file share visibility before proceeding.</li>
+                </ul>
+                <p><a href="phase-1.html">View Detailed Instructions for Phase 1</a></p>
+            </article>
+
+            <article class="phase-box">
+                <h3>Phase 2: Implementation</h3>
+                <p><strong>Goal:</strong> Deploy Debian to all machines, integrate them with AD, and configure them for centralized home directories and OneDrive access.</p>
+                <p><strong>Key Steps Include:</strong></p>
+                <ul>
+                    <li>Use PXE booting and the prepared Debian image to install the OS on all 20 machines.</li>
+                    <li>Leverage Ansible to install and configure Samba, Winbind, Rclone, and related packages.</li>
+                    <li>Join each machine to the AD domain and confirm domain user lookup works consistently.</li>
+                    <li>Set up PAM configurations so that home directories are created and mounted on login.</li>
+                    <li>Integrate Rclone-based OneDrive access, ensuring users can access their cloud files easily.</li>
+                </ul>
+                <p><a href="phase-2.html">View Detailed Instructions for Phase 2</a></p>
+            </article>
+
+            <article class="phase-box">
+                <h3>Phase 3: Testing</h3>
+                <p><strong>Goal:</strong> Validate the environment by having test users log in, test file access, and confirm that everything performs as expected.</p>
+                <p><strong>Key Steps Include:</strong></p>
+                <ul>
+                    <li>Have a subset of pupils or test accounts log in to multiple machines using their AD credentials.</li>
+                    <li>Verify that home directories follow each user regardless of which machine they use.</li>
+                    <li>Check OneDrive file access through Rclone mounts, ensuring stable file loading.</li>
+                    <li>Monitor performance with both large and small file transfers.</li>
+                    <li>Gather feedback from users on usability, performance, and reliability.</li>
+                </ul>
+                <p><a href="phase-3.html">View Detailed Instructions for Phase 3</a></p>
+            </article>
+
+            <article class="phase-box">
+                <h3>Phase 4: Evaluation</h3>
+                <p><strong>Goal:</strong> Analyse the results of the pilot and determine whether to scale the solution further.</p>
+                <p><strong>Key Steps Include:</strong></p>
+                <ul>
+                    <li>Review feedback from pupils and staff to identify strengths and weaknesses.</li>
+                    <li>Evaluate system logs, performance metrics, and user experience.</li>
+                    <li>Decide if the pilot environment meets educational and technical goals.</li>
+                    <li>Plan for documentation updates, training, or additional tools before a full rollout.</li>
+                </ul>
+                <p><a href="phase-4.html">View Detailed Instructions for Phase 4</a></p>
+            </article>
+        </section>
+
+        <section id="comments">
+            <h2>General Notes and Comments</h2>
+            <p>Use the space below to record any project-wide notes or observations that do not fit into a specific phase.</p>
+            <textarea id="comments-box" placeholder="Write your global notes here..."></textarea>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Classroom Linux Pilot. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Classroom Linux Pilot - Phase 2: Implementation</title>
+    <!-- Common Styles for all phases -->
+    <link rel="stylesheet" href="phases.css">
+    <!-- Specific styles for Phase 2 -->
+    <link rel="stylesheet" href="phase-2.css">
+    <script src="phases.js" defer></script>
+    <script src="phase-2.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Phase 2: Implementation</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Back to Overview</a></li>
+                <li><a href="phase-1.html">Phase 1</a></li>
+                <li><a href="phase-3.html">Phase 3</a></li>
+                <li><a href="phase-4.html">Phase 4</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="introduction">
+            <h2>Overview of Phase 2</h2>
+            <p>
+                In Phase 1, you prepared the foundation: isolating the network environment, setting up a central file server, 
+                confirming AD integration, and ensuring that Debian installations via PXE are ready. Now, in Phase 2, you will:
+            </p>
+            <ul>
+                <li>Deploy Debian onto all 20 classroom machines from the PXE server.</li>
+                <li>Use Ansible to install and configure essential packages (Samba, Winbind, Rclone, etc.).</li>
+                <li>Integrate each machine into the AD domain, ensuring seamless authentication.</li>
+                <li>Configure PAM for automatic home directory creation and OneDrive access via Rclone.</li>
+            </ul>
+            <p>
+                By the end of this phase, your 20 machines should be fully set up and ready for testing by pupils in Phase 3.
+            </p>
+        </section>
+
+        <!-- Step 1: Operating System Deployment -->
+        <section class="step-box">
+            <h3>Step 1: Operating System Deployment</h3>
+            <p>
+                With PXE and the subnet/VLAN ready, you can now install Debian on all 20 machines. 
+                Consistent OS baselines reduce variability and make management simpler.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Boot each of the 20 machines via PXE.  
+                    <a href="https://wiki.debian.org/PXEBootInstall" target="_blank">Debian PXE Boot Guide</a>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Complete a standard Debian network installation on each machine. Ensure they receive IPs from the VLAN (192.168.8.0/24).
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Verify that each machine can resolve the file server’s hostname and ping the AD domain controller after installation.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 2: Package Installation & Configuration with Ansible -->
+        <section class="step-box">
+            <h3>Step 2: Package Installation & Configuration (Ansible)</h3>
+            <p>
+                Use the Ansible environment set up in Phase 1 to ensure that each Debian machine is uniformly configured. 
+                Ansible playbooks can install the required packages, apply configuration files, and reduce manual effort.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Update your Ansible inventory file (<code>inventory.ini</code>) to include all 20 machines’ hostnames or IPs.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Write or update an Ansible playbook to install packages:  
+                    <code>ansible all -i inventory.ini -m apt -a "name=samba,winbind,libpam-winbind,libnss-winbind,rclone state=present"</code>  
+                    <a href="https://docs.ansible.com/" target="_blank">Ansible Documentation</a>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Distribute configuration files (e.g., <code>/etc/samba/smb.conf</code>, PAM config, 
+                    <code>/etc/nsswitch.conf</code>) using templates and the `template` module in Ansible.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Run the Ansible playbook to apply configurations across all machines. Confirm no errors are reported.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 3: AD Domain Integration -->
+        <section class="step-box">
+            <h3>Step 3: AD Domain Integration</h3>
+            <p>
+                Each machine needs to join the AD domain so that pupils can log in with their existing Microsoft credentials. 
+                This step ensures a single sign-on experience and centralised identity management.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Ensure your Ansible playbook includes a task to join the AD domain. This may involve running:
+                    <code>net ads join -U administrator</code> and using `expect` or the `win_domain_membership` module if available.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    After joining, test domain membership on one machine:  
+                    <code>wbinfo -u</code> should list domain users, and <code>getent passwd</code> should display domain accounts.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Verify that all 20 machines can resolve AD domain controllers, and that the time is synchronised (AD is sensitive to clock drift).
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 4: User Home Directories & PAM Configuration -->
+        <section class="step-box">
+            <h3>Step 4: User Home Directories & PAM Configuration</h3>
+            <p>
+                Ensure that when a domain user logs in, their home directory is automatically created if it does not exist and 
+                mounted from the file server. This involves configuring PAM with `pam_winbind.so` and `pam_mkhomedir.so`.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Update PAM configuration (e.g., <code>/etc/pam.d/common-auth</code> and <code>/etc/pam.d/common-session</code>) to include:
+                    <br>
+                    <code>auth    sufficient    pam_winbind.so</code><br>
+                    <code>session required    pam_mkhomedir.so skel=/etc/skel umask=0022</code>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Ensure Ansible deploys these PAM configurations consistently to all 20 machines.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test by logging in as a domain user on one machine. Confirm that a home directory is created on the file server’s share and is accessible.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 5: OneDrive Integration with Rclone -->
+        <section class="step-box">
+            <h3>Step 5: OneDrive Integration (Rclone)</h3>
+            <p>
+                Provide on-demand access to OneDrive files using Rclone mounts. Users can browse their OneDrive files 
+                as if they were local, without storing them locally. This ensures a consistent file access experience.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Configure an Rclone remote for OneDrive.  
+                    <a href="https://rclone.org/onedrive/" target="_blank">Rclone OneDrive Documentation</a>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Set up a systemd unit or login script so that when a user logs in, their OneDrive remote is mounted to a directory in their home.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test by logging in with a domain user that has OneDrive access. Confirm that `ls ~/OneDrive` (or the chosen mount point) shows their files.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 6: Verification Tests -->
+        <section class="step-box">
+            <h3>Step 6: Verification Tests</h3>
+            <p>
+                Before moving to Phase 3, verify that each machine is configured correctly. Ensure AD logins work, home directories mount properly, 
+                and OneDrive is accessible. This validation prevents issues during testing with pupils.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Log in with a test AD user on multiple machines. Check that the home directory and OneDrive files are consistent.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Verify that file transfers from OneDrive and the file server are stable and reasonably fast.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Check that all machines appear in the Ansible inventory and respond to `ansible -m ping`.
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Document any issues and address them now to ensure a smooth Phase 3.
+                </li>
+            </ul>
+        </section>
+
+        <section id="comments">
+            <h2>Notes and Comments</h2>
+            <p>Use the space below to record any phase-specific notes, issues encountered, or reminders for Phase 2.</p>
+            <textarea id="comments-box" placeholder="Write your Phase 2 notes here..."></textarea>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Classroom Linux Pilot - Phase 2</p>
+    </footer>
+</body>
+</html>
+

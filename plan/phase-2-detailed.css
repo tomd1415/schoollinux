@@ -1,0 +1,33 @@
+.more-info {
+    display: none;
+    background: #f0f8ff;
+    border-left: 3px solid #005f73;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.more-info h4 {
+    margin-top: 0;
+    color: #005f73;
+}
+
+.more-info-link {
+    margin-left: 10px;
+    font-size: 0.9em;
+    color: #005f73;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.more-info-link:hover {
+    text-decoration: none;
+}
+
+pre {
+    background: #eee;
+    padding: 10px;
+    overflow-x: auto;
+    border-radius: 5px;
+}
+

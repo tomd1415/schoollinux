@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Classroom Linux Pilot - Phase 3 (Detailed)</title>
+    <link rel="stylesheet" href="phases.css">
+    <link rel="stylesheet" href="phase-3-detailed.css">
+    <script src="phases.js" defer></script>
+    <script src="phase-3-detailed.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Phase 3: Testing (Detailed)</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Back to Overview</a></li>
+                <li><a href="phase-1.html">Phase 1</a></li>
+                <li><a href="phase-2.html">Phase 2</a></li>
+                <li><a href="phase-3.html">Original Phase 3 Page</a></li>
+                <li><a href="phase-4.html">Phase 4</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="introduction">
+            <h2>Overview of Phase 3 (Detailed View)</h2>
+            <p>
+                In Phase 3, you test the environment with actual users (or test accounts) to validate logins, file access, 
+                OneDrive integration, and performance. Each sub-step offers a "More Info" section with practical tips, commands, 
+                and references to troubleshoot and refine the environment as needed.
+            </p>
+        </section>
+
+        <!-- Step 1: User Logins and Experience -->
+        <section class="step-box">
+            <h3>Step 1: User Logins and Experience</h3>
+            <p>
+                Have a small group of pupils or test accounts log in using their AD credentials across multiple machines. 
+                Observe their experience and note any issues.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Instruct test users to log in on various pilot machines with their AD credentials.
+                    <a href="#" class="more-info-link" data-target="info-1-1">More Info</a>
+                    <div class="more-info" id="info-1-1">
+                        <h4>Additional Details:</h4>
+                        <p>
+                            Ask a few pupils to attempt logging in at the same time to check if authentication remains smooth.  
+                            Check system logs if they report slow responses:
+                        </p>
+                        <pre>
+journalctl -u winbind
+journalctl -u smbd
+                        </pre>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Confirm that login times are reasonable and users don’t face delays.
+                    <a href="#" class="more-info-link" data-target="info-1-2">More Info</a>
+                    <div class="more-info" id="info-1-2">
+                        <h4>Measuring Login Times:</h4>
+                        <p>
+                            Time how long it takes from entering credentials to the desktop/terminal being ready.  
+                            If slow, consider checking network bandwidth, AD DC load, or Winbind caching settings.
+                        </p>
+                        <p>
+                            Reference:  
+                            <a href="https://wiki.samba.org/index.php/Performance_Tuning" target="_blank">Samba Performance Tuning</a>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Observe if home directories mount correctly and initial files are accessible.
+                    <a href="#" class="more-info-link" data-target="info-1-3">More Info</a>
+                    <div class="more-info" id="info-1-3">
+                        <h4>Home Directory Check:</h4>
+                        <pre>
+ls /home/SCHOOL/username
+                        </pre>
+                        <p>
+                            If the directory exists and is owned by the user, PAM and mkhomedir are working correctly.  
+                            Verify that any default files from /etc/skel have been copied over.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 2: Home Directories and OneDrive Access -->
+        <section class="step-box">
+            <h3>Step 2: Home Directories and OneDrive Access</h3>
+            <p>
+                Verify that user home directories are consistent across different machines and that OneDrive files are accessible.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Ask users to open their home directories on multiple machines, ensuring the same files appear.
+                    <a href="#" class="more-info-link" data-target="info-2-1">More Info</a>
+                    <div class="more-info" id="info-2-1">
+                        <h4>Consistency Check:</h4>
+                        <p>
+                            Have a user create a test file on one machine:
+                        </p>
+                        <pre>
+touch ~/testfile.txt
+                        </pre>
+                        <p>
+                            Then log into another pilot machine and ensure `testfile.txt` appears there as well.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Open OneDrive mounts to list and access files.
+                    <a href="#" class="more-info-link" data-target="info-2-2">More Info</a>
+                    <div class="more-info" id="info-2-2">
+                        <h4>OneDrive Check:</h4>
+                        <pre>
+ls ~/OneDrive
+cat ~/OneDrive/school-project.docx
+                        </pre>
+                        <p>
+                            Ensure the file listing is quick and that files open without errors.  
+                            Check Rclone logs if performance is slow:
+                        </p>
+                        <pre>
+journalctl --user -u rclone-onedrive
+                        </pre>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test file editing and saving back to OneDrive.
+                    <a href="#" class="more-info-link" data-target="info-2-3">More Info</a>
+                    <div class="more-info" id="info-2-3">
+                        <h4>Edit & Sync Test:</h4>
+                        <p>
+                            Open a text file in OneDrive and add content:
+                        </p>
+                        <pre>
+nano ~/OneDrive/notes.txt
+                        </pre>
+                        <p>
+                            Save and then check from another machine or via OneDrive web interface to ensure changes are synced.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 3: Performance and Reliability Checks -->
+        <section class="step-box">
+            <h3>Step 3: Performance and Reliability Checks</h3>
+            <p>
+                Assess how the system performs when multiple users log in simultaneously, transfer files, and access OneDrive. 
+                Identify any performance bottlenecks.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Monitor login times under simultaneous logins.
+                    <a href="#" class="more-info-link" data-target="info-3-1">More Info</a>
+                    <div class="more-info" id="info-3-1">
+                        <h4>Simultaneous Login Test:</h4>
+                        <p>
+                            Have several users log in at once. Note if login times increase significantly.  
+                            If they do, consider caching or verifying the AD DC is not under heavy load.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test file transfers of both small and large files from OneDrive and the file server.
+                    <a href="#" class="more-info-link" data-target="info-3-2">More Info</a>
+                    <div class="more-info" id="info-3-2">
+                        <h4>File Transfer Test:</h4>
+                        <pre>
+cp ~/OneDrive/largevideo.mp4 ~/Documents/
+time cat ~/Documents/largevideo.mp4 > /dev/null
+                        </pre>
+                        <p>
+                            Use the `time` command to measure how long it takes to read through a large file.  
+                            Compare this against expected network speeds.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Note any latency or errors and check logs for hints.
+                    <a href="#" class="more-info-link" data-target="info-3-3">More Info</a>
+                    <div class="more-info" id="info-3-3">
+                        <h4>Troubleshooting Logs:</h4>
+                        <pre>
+journalctl -u smbd
+journalctl -u winbind
+                        </pre>
+                        <p>
+                            Check Rclone logs for OneDrive issues and system logs for network or hardware errors.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 4: Feedback and Issue Collection -->
+        <section class="step-box">
+            <h3>Step 4: Feedback and Issue Collection</h3>
+            <p>
+                Gather qualitative feedback from pupils and staff. Note any usability issues, confusion, or suggested improvements.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Conduct short surveys or ask direct questions about ease of use and performance.
+                    <a href="#" class="more-info-link" data-target="info-4-1">More Info</a>
+                    <div class="more-info" id="info-4-1">
+                        <h4>Survey Tips:</h4>
+                        <p>
+                            Ask pupils:
+                            - Was logging in easy?  
+                            - Did files load quickly?  
+                            - Any parts confusing?  
+                            
+                            Keep surveys short and direct.  
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Record any error messages or unexpected behaviours.
+                    <a href="#" class="more-info-link" data-target="info-4-2">More Info</a>
+                    <div class="more-info" id="info-4-2">
+                        <h4>Error Tracking:</h4>
+                        <p>
+                            Maintain a shared document or ticket system to log issues.  
+                            Include details: which machine, which user, what time, what error occurred.  
+                            This makes troubleshooting more systematic.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Document suggestions from users on how to improve file access or login procedures.
+                    <a href="#" class="more-info-link" data-target="info-4-3">More Info</a>
+                    <div class="more-info" id="info-4-3">
+                        <h4>Incorporating Suggestions:</h4>
+                        <p>
+                            If multiple users find a certain step confusing, consider adding an instructional PDF or 
+                            a quick reference guide on the desktop.  
+                            Ansible can be used to place these help files on all machines.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 5: Refinements and Minor Adjustments -->
+        <section class="step-box">
+            <h3>Step 5: Refinements and Minor Adjustments</h3>
+            <p>
+                Address the issues found during testing. Update configurations, run Ansible playbooks again, 
+                and retest to ensure improvements are effective.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    If login times are slow, consider caching or adjusting Winbind configuration.
+                    <a href="#" class="more-info-link" data-target="info-5-1">More Info</a>
+                    <div class="more-info" id="info-5-1">
+                        <h4>Winbind Caching:</h4>
+                        <p>
+                            You can enable NSS caching or adjust Winbind settings in <code>/etc/samba/smb.conf</code>:
+                        </p>
+                        <pre>
+winbind cache time = 300
+                        </pre>
+                        <p>
+                            This can reduce repeated lookups. Re-run Ansible after making changes.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    If OneDrive is sluggish, explore Rclone caching or verify network throughput.
+                    <a href="#" class="more-info-link" data-target="info-5-2">More Info</a>
+                    <div class="more-info" id="info-5-2">
+                        <h4>Rclone Caching Options:</h4>
+                        <pre>
+rclone mount onedrive: ~/OneDrive --vfs-cache-mode full
+                        </pre>
+                        <p>
+                            Caching can improve responsiveness. Adjust your systemd unit or login script accordingly and run `systemctl --user daemon-reload`.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Update and rerun Ansible playbooks to deploy these refinements across all machines.
+                    <a href="#" class="more-info-link" data-target="info-5-3">More Info</a>
+                    <div class="more-info" id="info-5-3">
+                        <h4>Updating Configurations with Ansible:</h4>
+                        <pre>
+ansible-playbook -i inventory.ini refinements.yml
+                        </pre>
+                        <p>
+                            Consider creating a separate playbook (refinements.yml) to apply changes.  
+                            Confirm results by retesting logins and file access.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <section id="comments">
+            <h2>Notes and Comments</h2>
+            <p>Use this space to record any notes, issues, or observations discovered during the detailed steps of Phase 3.</p>
+            <textarea id="comments-box" placeholder="Write your detailed notes here..."></textarea>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Classroom Linux Pilot - Phase 3 (Detailed)</p>
+    </footer>
+</body>
+</html>
+

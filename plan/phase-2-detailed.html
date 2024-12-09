@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Classroom Linux Pilot - Phase 2 (Detailed)</title>
+    <link rel="stylesheet" href="phases.css">
+    <link rel="stylesheet" href="phase-2-detailed.css">
+    <script src="phases.js" defer></script>
+    <script src="phase-2-detailed.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Phase 2: Implementation (Detailed)</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Back to Overview</a></li>
+                <li><a href="phase-1.html">Phase 1</a></li>
+                <li><a href="phase-2.html">Original Phase 2 Page</a></li>
+                <li><a href="phase-3.html">Phase 3</a></li>
+                <li><a href="phase-4.html">Phase 4</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="introduction">
+            <h2>Overview of Phase 2 (Detailed View)</h2>
+            <p>
+                In Phase 2, you will deploy Debian onto all 20 machines, configure them using Ansible, join them to the AD domain, 
+                set up home directories with PAM, and integrate OneDrive via Rclone. Click "More Info" for command examples, file snippets, and references.
+            </p>
+        </section>
+
+        <!-- Step 1: Operating System Deployment -->
+        <section class="step-box">
+            <h3>Step 1: Operating System Deployment</h3>
+            <p>
+                Using your PXE setup from Phase 1, install Debian on all 20 classroom machines. This creates a uniform baseline environment.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Boot each machine via PXE and perform a network installation of Debian.
+                    <a href="#" class="more-info-link" data-target="info-1-1">More Info</a>
+                    <div class="more-info" id="info-1-1">
+                        <h4>PXE Installation Details:</h4>
+                        <p>
+                            Ensure each machine’s BIOS/UEFI is set to network/PXE boot.  
+                            After booting, select the Debian installer and follow the prompts. Confirm it gets an IP from the VLAN (192.168.8.0/24).
+                        </p>
+                        <p>
+                            Reference: <a href="https://wiki.debian.org/PXEBootInstall" target="_blank">Debian PXE Boot Guide</a>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Ensure each machine can resolve the file server and AD domain after installation.
+                    <a href="#" class="more-info-link" data-target="info-1-2">More Info</a>
+                    <div class="more-info" id="info-1-2">
+                        <h4>Testing Connectivity:</h4>
+                        <pre>
+ping fileserver.school.local
+ping adcontroller.school.local
+                        </pre>
+                        <p>
+                            If DNS is not set up, add entries to /etc/hosts or configure DNS via dnsmasq.  
+                            Make sure you can reach the AD domain controller to enable domain join later.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 2: Package Installation & Configuration (Ansible) -->
+        <section class="step-box">
+            <h3>Step 2: Package Installation & Configuration (Ansible)</h3>
+            <p>
+                Use Ansible to uniformly install and configure necessary packages (Samba, Winbind, Rclone, etc.) on all machines.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Update your Ansible inventory file (created in Phase 1) with all 20 machines.
+                    <a href="#" class="more-info-link" data-target="info-2-1">More Info</a>
+                    <div class="more-info" id="info-2-1">
+                        <h4>Inventory Example (inventory.ini):</h4>
+                        <pre>
+[pilot-machines]
+pilot1.school.local
+pilot2.school.local
+...
+pilot20.school.local
+                        </pre>
+                        <p>
+                            Ensure SSH key-based auth is in place.  
+                            <code>ansible -i inventory.ini all -m ping</code> should return SUCCESS for all hosts.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Create an Ansible playbook to install packages:
+                    <a href="#" class="more-info-link" data-target="info-2-2">More Info</a>
+                    <div class="more-info" id="info-2-2">
+                        <h4>Ansible Playbook (packages.yml) Example:</h4>
+                        <pre>
+- hosts: pilot-machines
+  become: yes
+  tasks:
+    - name: Install required packages
+      apt:
+        name: 
+          - samba
+          - winbind
+          - libpam-winbind
+          - libnss-winbind
+          - rclone
+        state: present
+        update_cache: yes
+                        </pre>
+                        <p>
+                            Run with:  
+                            <code>ansible-playbook -i inventory.ini packages.yml</code>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Distribute configuration files (smb.conf, pam.d, nsswitch.conf) using Ansible templates.
+                    <a href="#" class="more-info-link" data-target="info-2-3">More Info</a>
+                    <div class="more-info" id="info-2-3">
+                        <h4>Template Example (smb.conf.j2):</h4>
+                        <pre>
+[global]
+   security = ads
+   workgroup = SCHOOL
+   realm = SCHOOL.LOCAL
+   winbind use default domain = yes
+   winbind enum users = yes
+   winbind enum groups = yes
+   template shell = /bin/bash
+
+[homes]
+   read only = no
+   browseable = no
+                        </pre>
+                        <p>
+                            In your playbook:
+                        </p>
+                        <pre>
+- name: Deploy smb.conf
+  template:
+    src: templates/smb.conf.j2
+    dest: /etc/samba/smb.conf
+  notify: restart samba
+                        </pre>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Verify all configurations apply successfully with no errors.
+                    <a href="#" class="more-info-link" data-target="info-2-4">More Info</a>
+                    <div class="more-info" id="info-2-4">
+                        <h4>Verification:</h4>
+                        <p>
+                            After running <code>ansible-playbook</code>, check logs and run:  
+                            <code>ansible -i inventory.ini all -a "smbstatus"</code>  
+                            to ensure Samba is running everywhere.  
+                            Also verify PAM and NSS configs by checking <code>/etc/pam.d/common-auth</code> and <code>/etc/nsswitch.conf</code> on a machine.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 3: AD Domain Integration -->
+        <section class="step-box">
+            <h3>Step 3: AD Domain Integration</h3>
+            <p>
+                Join each Debian machine to the AD domain so that pupils can log in with their existing credentials.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Use Ansible or manual steps to join AD:
+                    <a href="#" class="more-info-link" data-target="info-3-1">More Info</a>
+                    <div class="more-info" id="info-3-1">
+                        <h4>Joining AD Domain:</h4>
+                        <pre>
+ansible -i inventory.ini pilot-machines -m shell -a \
+"net ads join -U administrator%password"
+                        </pre>
+                        <p>
+                            Replace 'administrator%password' with appropriate credentials or use a vault for security.  
+                            Check domain membership with <code>wbinfo -u</code>.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test domain user lookup on multiple machines:
+                    <a href="#" class="more-info-link" data-target="info-3-2">More Info</a>
+                    <div class="more-info" id="info-3-2">
+                        <h4>User Lookup Check:</h4>
+                        <pre>
+wbinfo -u
+getent passwd "SCHOOL\\someuser"
+                        </pre>
+                        <p>
+                            If successful, domain users and groups are visible, indicating a proper AD integration.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 4: User Home Directories & PAM Configuration -->
+        <section class="step-box">
+            <h3>Step 4: User Home Directories & PAM Configuration</h3>
+            <p>
+                Configure PAM so that when a domain user logs in, their home directory is created and mounted automatically from the file server.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Add <code>pam_winbind.so</code> and <code>pam_mkhomedir.so</code> to PAM configs.
+                    <a href="#" class="more-info-link" data-target="info-4-1">More Info</a>
+                    <div class="more-info" id="info-4-1">
+                        <h4>PAM Configuration:</h4>
+                        <pre>
+# in /etc/pam.d/common-auth:
+auth    sufficient    pam_winbind.so
+
+# in /etc/pam.d/common-session:
+session required    pam_mkhomedir.so skel=/etc/skel umask=0022
+                        </pre>
+                        <p>
+                            Distribute these files via Ansible templates to ensure consistency.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test by logging in as a domain user on one machine.
+                    <a href="#" class="more-info-link" data-target="info-4-2">More Info</a>
+                    <div class="more-info" id="info-4-2">
+                        <h4>Testing Login:</h4>
+                        <p>
+                            On a pilot machine’s console or SSH:
+                        </p>
+                        <pre>
+ssh SCHOOL\\username@pilot1.school.local
+# or just login at the GUI if available
+                        </pre>
+                        <p>
+                            Upon first login, the user’s home directory should be created at /home/SCHOOL/username.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 5: OneDrive Integration (Rclone) -->
+        <section class="step-box">
+            <h3>Step 5: OneDrive Integration (Rclone)</h3>
+            <p>
+                Mount OneDrive via Rclone for on-demand access to cloud files without local syncing.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Configure Rclone remote for OneDrive.
+                    <a href="#" class="more-info-link" data-target="info-5-1">More Info</a>
+                    <div class="more-info" id="info-5-1">
+                        <h4>Rclone Configuration:</h4>
+                        <pre>
+rclone config
+# Choose OneDrive and follow prompts
+# Store config in /home/adminuser/.config/rclone/rclone.conf
+                        </pre>
+                        <p>
+                            Reference:  
+                            <a href="https://rclone.org/onedrive/" target="_blank">Rclone OneDrive Docs</a>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Use systemd services or login scripts to mount OneDrive at login.
+                    <a href="#" class="more-info-link" data-target="info-5-2">More Info</a>
+                    <div class="more-info" id="info-5-2">
+                        <h4>Auto-Mounting OneDrive:</h4>
+                        <pre>
+# Example systemd user service (~/.config/systemd/user/rclone-onedrive.service)
+[Unit]
+Description=Mount OneDrive with Rclone
+After=network-online.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/rclone mount onedrive: ~/OneDrive --daemon
+ExecStop=/bin/fusermount -u ~/OneDrive
+
+[Install]
+WantedBy=default.target
+                        </pre>
+                        <p>
+                            Enable with:
+                        </p>
+                        <pre>
+systemctl --user enable rclone-onedrive
+systemctl --user start rclone-onedrive
+                        </pre>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 6: Verification Tests -->
+        <section class="step-box">
+            <h3>Step 6: Verification Tests</h3>
+            <p>
+                Before moving to Phase 3, ensure all machines are correctly set up. Test AD logins, home directories, and OneDrive access.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Log in as a domain user on multiple machines.
+                    <a href="#" class="more-info-link" data-target="info-6-1">More Info</a>
+                    <div class="more-info" id="info-6-1">
+                        <h4>Login Test:</h4>
+                        <p>
+                            Confirm that home directories appear and OneDrive files are accessible.  
+                            Check that performance is reasonable and that no errors occur.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test file transfers from OneDrive and ensure stable access.
+                    <a href="#" class="more-info-link" data-target="info-6-2">More Info</a>
+                    <div class="more-info" id="info-6-2">
+                        <h4>File Transfer Test:</h4>
+                        <pre>
+cp ~/OneDrive/somefile.txt ~/Documents/
+cat ~/Documents/somefile.txt
+                        </pre>
+                        <p>
+                            Confirm files open quickly and saving changes syncs back to OneDrive.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Document any issues and fix them now.
+                    <a href="#" class="more-info-link" data-target="info-6-3">More Info</a>
+                    <div class="more-info" id="info-6-3">
+                        <h4>Documentation:</h4>
+                        <p>
+                            Keep notes of any performance issues, login delays, or OneDrive errors.  
+                            Update Ansible playbooks or Samba/Winbind configs as needed before Phase 3.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <section id="comments">
+            <h2>Notes and Comments</h2>
+            <p>Use this section to record any additional notes, issues, or ideas discovered during these detailed steps for Phase 2.</p>
+            <textarea id="comments-box" placeholder="Write your detailed notes here..."></textarea>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Classroom Linux Pilot - Phase 2 (Detailed)</p>
+    </footer>
+</body>
+</html>
+

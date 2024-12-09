@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Classroom Linux Pilot - Phase 4 (Detailed)</title>
+    <link rel="stylesheet" href="phases.css">
+    <link rel="stylesheet" href="phase-4-detailed.css">
+    <script src="phases.js" defer></script>
+    <script src="phase-4-detailed.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Phase 4: Evaluation (Detailed)</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Back to Overview</a></li>
+                <li><a href="phase-1.html">Phase 1</a></li>
+                <li><a href="phase-2.html">Phase 2</a></li>
+                <li><a href="phase-3.html">Phase 3</a></li>
+                <li><a href="phase-4.html">Original Phase 4 Page</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="introduction">
+            <h2>Overview of Phase 4 (Detailed View)</h2>
+            <p>
+                In Phase 4, you will analyse feedback, review logs and performance metrics, 
+                decide on the next steps for the deployment, and prepare documentation and training. 
+                Each sub-step includes “More Info” sections with practical guidance.
+            </p>
+        </section>
+
+        <!-- Step 1: Feedback Analysis -->
+        <section class="step-box">
+            <h3>Step 1: Feedback Analysis</h3>
+            <p>
+                Review all user and staff feedback gathered in Phase 3. Identify common issues, positive aspects, and areas needing improvement.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Read through pupil and staff feedback notes, identifying key themes.
+                    <a href="#" class="more-info-link" data-target="info-1-1">More Info</a>
+                    <div class="more-info" id="info-1-1">
+                        <h4>Reviewing Feedback:</h4>
+                        <p>
+                            If you have a shared document or spreadsheet of feedback, group comments by category: login speed, file access, 
+                            usability of OneDrive, etc. This helps you see patterns.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Discuss findings with staff to validate concerns and priorities.
+                    <a href="#" class="more-info-link" data-target="info-1-2">More Info</a>
+                    <div class="more-info" id="info-1-2">
+                        <h4>Staff Discussions:</h4>
+                        <p>
+                            Set up a short meeting or send a summary of findings to teaching and IT staff.  
+                            Ask if they agree with the identified priorities and if there are any missed points.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Prioritise improvements based on severity and educational impact.
+                    <a href="#" class="more-info-link" data-target="info-1-3">More Info</a>
+                    <div class="more-info" id="info-1-3">
+                        <h4>Prioritisation Framework:</h4>
+                        <p>
+                            Consider classifying issues as Critical, High, Medium, or Low impact.  
+                            Address critical login issues first, then move to performance tweaks, and finally cosmetic or convenience improvements.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 2: Performance and Log Review -->
+        <section class="step-box">
+            <h3>Step 2: Performance and Log Review</h3>
+            <p>
+                Review system and service logs to ensure the technical side meets expectations. 
+                Confirm that login times, file transfers, and OneDrive performance align with benchmarks.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Examine Samba, Winbind, and system logs for errors or warnings.
+                    <a href="#" class="more-info-link" data-target="info-2-1">More Info</a>
+                    <div class="more-info" id="info-2-1">
+                        <h4>Log Review Commands:</h4>
+                        <pre>
+journalctl -u smbd
+journalctl -u winbind
+journalctl -e  # full system logs
+                        </pre>
+                        <p>
+                            Check for repeated errors or slow responses around peak login times.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Check Rclone logs for OneDrive performance metrics and errors.
+                    <a href="#" class="more-info-link" data-target="info-2-2">More Info</a>
+                    <div class="more-info" id="info-2-2">
+                        <h4>Rclone Log Review:</h4>
+                        <p>
+                            If you enabled logging in your systemd unit or via `-v` flags:
+                        </p>
+                        <pre>
+journalctl --user -u rclone-onedrive
+                        </pre>
+                        <p>
+                            Look for latency warnings or failed file operations.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Compare actual login times and file access speeds against your initial benchmarks.
+                    <a href="#" class="more-info-link" data-target="info-2-3">More Info</a>
+                    <div class="more-info" id="info-2-3">
+                        <h4>Benchmark Comparison:</h4>
+                        <p>
+                            If you recorded login times or file transfer speeds during Phase 2, compare them now.  
+                            Are login times still under 10 seconds? Are file operations snappy enough for classroom use?
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Evaluate resource usage (CPU, RAM, network) on the server and clients.
+                    <a href="#" class="more-info-link" data-target="info-2-4">More Info</a>
+                    <div class="more-info" id="info-2-4">
+                        <h4>Resource Monitoring:</h4>
+                        <pre>
+top
+htop
+iotop
+nload
+                        </pre>
+                        <p>
+                            Use these tools to spot resource bottlenecks. If the file server’s CPU spikes during login storms, consider upgrading hardware or tuning settings.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 3: Decision Making and Next Steps -->
+        <section class="step-box">
+            <h3>Step 3: Decision Making and Next Steps</h3>
+            <p>
+                Based on feedback and performance reviews, decide if the environment is ready to scale beyond the pilot classroom 
+                or if further refinements are needed first.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    If issues are manageable, plan a school-wide rollout.
+                    <a href="#" class="more-info-link" data-target="info-3-1">More Info</a>
+                    <div class="more-info" id="info-3-1">
+                        <h4>Scaling Up:</h4>
+                        <p>
+                            Consider rolling out to another classroom as a second test before going school-wide.  
+                            Ensure you have enough support staff and documentation for a larger user base.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    If significant issues remain, outline a clear action plan for more refinements.
+                    <a href="#" class="more-info-link" data-target="info-3-2">More Info</a>
+                    <div class="more-info" id="info-3-2">
+                        <h4>Action Plan for Refinements:</h4>
+                        <p>
+                            List out the top issues (e.g., slow logins, OneDrive latency) and assign tasks to fix them.  
+                            Set deadlines and track progress.  
+                            Use Ansible to quickly roll out configuration changes once decided.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Communicate the outcome and next steps to leadership and stakeholders.
+                    <a href="#" class="more-info-link" data-target="info-3-3">More Info</a>
+                    <div class="more-info" id="info-3-3">
+                        <h4>Stakeholder Communication:</h4>
+                        <p>
+                            Prepare a short report summarising the pilot’s results, achievements, issues, and recommendations.  
+                            Present it to school leadership and relevant staff so they can make informed decisions.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 4: Documentation and Training -->
+        <section class="step-box">
+            <h3>Step 4: Documentation and Training</h3>
+            <p>
+                Ensure that staff and pupils have the resources they need. Update documentation, create how-to guides, and consider training sessions.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Update internal documentation with any changes made during the pilot.
+                    <a href="#" class="more-info-link" data-target="info-4-1">More Info</a>
+                    <div class="more-info" id="info-4-1">
+                        <h4>Documentation Updates:</h4>
+                        <p>
+                            Include instructions for logging in, accessing OneDrive, common troubleshooting tips, and contacts for further help.  
+                            Store docs in a version-controlled repository and distribute to staff.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Provide staff with troubleshooting guides and escalation procedures.
+                    <a href="#" class="more-info-link" data-target="info-4-2">More Info</a>
+                    <div class="more-info" id="info-4-2">
+                        <h4>Staff Training Materials:</h4>
+                        <p>
+                            Create a one-page cheat sheet or a short video tutorial.  
+                            Outline steps for reporting issues, checking basic connectivity, and who to contact for advanced support.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Consider short training sessions or video tutorials for end users.
+                    <a href="#" class="more-info-link" data-target="info-4-3">More Info</a>
+                    <div class="more-info" id="info-4-3">
+                        <h4>User Training:</h4>
+                        <p>
+                            A brief orientation for pupils can significantly reduce confusion.  
+                            Show them how to log in, where their files are, and how to access OneDrive.  
+                            Record a simple screencast and share it.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <section id="comments">
+            <h2>Notes and Comments</h2>
+            <p>Use this space to record any final notes, issues, or observations discovered during these detailed steps for Phase 4.</p>
+            <textarea id="comments-box" placeholder="Write your detailed notes here..."></textarea>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Classroom Linux Pilot - Phase 4 (Detailed)</p>
+    </footer>
+</body>
+</html>
+

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Classroom Linux Pilot - Phase 1 (Detailed)</title>
+    <link rel="stylesheet" href="phases.css">
+    <link rel="stylesheet" href="phase-1-detailed.css">
+    <script src="phases.js" defer></script>
+    <script src="phase-1-detailed.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Phase 1: Preparation (Detailed)</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Back to Overview</a></li>
+                <li><a href="phase-1.html">Original Phase 1 Page</a></li>
+                <li><a href="phase-2.html">Phase 2</a></li>
+                <li><a href="phase-3.html">Phase 3</a></li>
+                <li><a href="phase-4.html">Phase 4</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="introduction">
+            <h2>Overview of Phase 1 (Detailed View)</h2>
+            <p>
+                This page provides expanded instructions for every sub-step of Phase 1. 
+                Click "More Info" next to each sub-step for detailed commands, configuration snippets, and references.
+            </p>
+        </section>
+
+        <!-- Step 1: Network Isolation (VLAN/Subnet) -->
+        <section class="step-box">
+            <h3>Step 1: Network Isolation (VLAN/Subnet)</h3>
+            <p>
+                Create a dedicated VLAN/subnet (192.168.8.0/24) and configure DHCP using dnsmasq. 
+                This ensures the pilot environment is isolated from the main school network.
+            </p>
+            <p><strong>Key Tasks:</strong></p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Configure a VLAN/subnet on your switch and server to host the 20 pilot machines.
+                    <a href="#" class="more-info-link" data-target="info-1-1">More Info</a>
+                    <div class="more-info" id="info-1-1">
+                        <h4>Additional Details:</h4>
+                        <p><strong>Switch Configuration Example (Cisco):</strong></p>
+                        <pre>
+conf t
+vlan 200
+ name PILOT_VLAN
+exit
+interface gi0/1
+ switchport mode access
+ switchport access vlan 200
+exit
+wr mem
+                        </pre>
+                        <p>
+                            Replace interface and VLAN IDs as appropriate. Refer to your switch documentation for exact commands.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Set up dnsmasq for DHCP on the VLAN interface.
+                    <a href="#" class="more-info-link" data-target="info-1-2">More Info</a>
+                    <div class="more-info" id="info-1-2">
+                        <h4>Additional Details:</h4>
+                        <p><strong>dnsmasq Configuration:</strong></p>
+                        <pre>
+sudo apt install dnsmasq
+sudo nano /etc/dnsmasq.conf
+
+# Add something like:
+interface=eth1.200
+dhcp-range=192.168.8.100,192.168.8.200,12h
+dhcp-option=3,192.168.8.1  # Gateway
+dhcp-option=6,192.168.8.1  # DNS
+domain=school.local
+                        </pre>
+                        <p>
+                            Ensure your VLAN interface (e.g., eth1.200) is up and assigned an IP (e.g., 192.168.8.1).  
+                            Restart dnsmasq:
+                        </p>
+                        <pre>
+sudo systemctl restart dnsmasq
+                        </pre>
+                        <p>
+                            Check logs: <code>journalctl -u dnsmasq</code> for any errors.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test connectivity and DHCP: Confirm that pilot machines receive IPs and can ping the PXE server (192.168.8.3).
+                    <a href="#" class="more-info-link" data-target="info-1-3">More Info</a>
+                    <div class="more-info" id="info-1-3">
+                        <h4>Additional Details:</h4>
+                        <p>On a pilot machine, run:</p>
+                        <pre>
+ip addr
+ping 192.168.8.3
+                        </pre>
+                        <p>
+                            If you get a reply, VLAN and DHCP are working. You can also try <code>ping google.com</code> if internet access is required.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 2: Central File Server Setup (Samba/Winbind) -->
+        <section class="step-box">
+            <h3>Step 2: Central File Server (Samba/Winbind)</h3>
+            <p>
+                Set up a Debian-based file server integrated with AD. This ensures domain users have consistent home directories across all pilot machines.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Install Samba and Winbind packages.
+                    <a href="#" class="more-info-link" data-target="info-2-1">More Info</a>
+                    <div class="more-info" id="info-2-1">
+                        <h4>Additional Details:</h4>
+                        <pre>
+sudo apt update
+sudo apt install samba winbind libpam-winbind libnss-winbind
+                        </pre>
+                        <p>
+                            Refer to:  
+                            <a href="https://wiki.samba.org/index.php/Main_Page" target="_blank">Samba Official Documentation</a>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Configure <code>/etc/samba/smb.conf</code> for AD integration (security = ads, specify workgroup and realm).
+                    <a href="#" class="more-info-link" data-target="info-2-2">More Info</a>
+                    <div class="more-info" id="info-2-2">
+                        <h4>Example smb.conf:</h4>
+                        <pre>
+[global]
+   security = ads
+   workgroup = SCHOOL
+   realm = SCHOOL.LOCAL
+   winbind use default domain = yes
+   winbind enum users = yes
+   winbind enum groups = yes
+   template shell = /bin/bash
+
+[homes]
+   read only = no
+   browseable = no
+                        </pre>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Join the server to the AD domain and verify domain users visibility.
+                    <a href="#" class="more-info-link" data-target="info-2-3">More Info</a>
+                    <div class="more-info" id="info-2-3">
+                        <h4>Joining AD Domain:</h4>
+                        <pre>
+sudo net ads join -U Administrator
+wbinfo -u
+getent passwd
+                        </pre>
+                        <p>
+                            If <code>wbinfo -u</code> lists domain users, integration is successful.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Set up the [homes] share to serve user home directories.
+                    <a href="#" class="more-info-link" data-target="info-2-4">More Info</a>
+                    <div class="more-info" id="info-2-4">
+                        <h4>[homes] Share (Already in smb.conf):</h4>
+                        <p>
+                            The [homes] share is defined as above. Ensure correct permissions on the home directory base path, e.g.:
+                        </p>
+                        <pre>
+sudo mkdir -p /home/DOMAIN
+sudo chmod 700 /home/DOMAIN
+                        </pre>
+                        <p>
+                            Replace DOMAIN with your AD domain short name if desired.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test access with <code>smbclient</code>.
+                    <a href="#" class="more-info-link" data-target="info-2-5">More Info</a>
+                    <div class="more-info" id="info-2-5">
+                        <h4>Testing Access:</h4>
+                        <pre>
+smbclient -L //fileserver -U username
+                        </pre>
+                        <p>
+                            Replace 'fileserver' with your server's hostname. If you see homes listed and can authenticate, it's working.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 3: Debian Installation via PXE -->
+        <section class="step-box">
+            <h3>Step 3: Debian Installation via PXE (192.168.8.3)</h3>
+            <p>
+                Use the PXE server at 192.168.8.3 to perform a netinstall of Debian on all pilot machines. This ensures a uniform base setup.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Place Debian netboot files on the PXE server.
+                    <a href="#" class="more-info-link" data-target="info-3-1">More Info</a>
+                    <div class="more-info" id="info-3-1">
+                        <h4>Example Setup:</h4>
+                        <p>On the PXE server:</p>
+                        <pre>
+sudo apt install dnsmasq tftpd-hpa
+sudo mkdir -p /var/lib/tftpboot/debian
+# Download netboot files:
+cd /var/lib/tftpboot/debian
+wget http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/netboot.tar.gz
+tar xvf netboot.tar.gz
+                        </pre>
+                        <p>
+                            Configure dnsmasq to serve the PXE boot:
+                        </p>
+                        <pre>
+# in /etc/dnsmasq.conf (example)
+dhcp-boot=debian/pxelinux.0,pxeserver,192.168.8.3
+                        </pre>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Boot one test machine via PXE and run through the Debian network installation.
+                    <a href="#" class="more-info-link" data-target="info-3-2">More Info</a>
+                    <div class="more-info" id="info-3-2">
+                        <h4>Installation Steps:</h4>
+                        <p>
+                            Set the test machine’s BIOS/UEFI to PXE boot. It should load the Debian installer menu.  
+                            Follow on-screen prompts, ensuring it gets an IP from your VLAN.  
+                            Reference:  
+                            <a href="https://wiki.debian.org/PXEBootInstall" target="_blank">Debian PXE Boot Documentation</a>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    After a successful test, replicate for all 20 machines.
+                    <a href="#" class="more-info-link" data-target="info-3-3">More Info</a>
+                    <div class="more-info" id="info-3-3">
+                        <h4>Scaling Up:</h4>
+                        <p>
+                            Once confident, boot each of the 20 machines via PXE and install Debian.  
+                            Keep notes of any deviations.  
+                            After installation, ensure each machine can reach the file server and AD domain controller.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 4: Configuration Management (Ansible) -->
+        <section class="step-box">
+            <h3>Step 4: Configuration Management (Ansible)</h3>
+            <p>
+                Use Ansible to manage and configure all pilot machines consistently. This reduces manual work and ensures uniform settings.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Install Ansible on the control machine.
+                    <a href="#" class="more-info-link" data-target="info-4-1">More Info</a>
+                    <div class="more-info" id="info-4-1">
+                        <h4>Installation:</h4>
+                        <pre>
+sudo apt update
+sudo apt install ansible
+                        </pre>
+                        <p>
+                            Reference:  
+                            <a href="https://docs.ansible.com/" target="_blank">Ansible Documentation</a>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Create an inventory file listing the 20 machines.
+                    <a href="#" class="more-info-link" data-target="info-4-2">More Info</a>
+                    <div class="more-info" id="info-4-2">
+                        <h4>Example Inventory (inventory.ini):</h4>
+                        <pre>
+[pilot-machines]
+pilot1.school.local
+pilot2.school.local
+...
+pilot20.school.local
+                        </pre>
+                        <p>
+                            Ensure DNS or /etc/hosts entries are in place so these hostnames resolve.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Set up SSH key-based authentication to all machines.
+                    <a href="#" class="more-info-link" data-target="info-4-3">More Info</a>
+                    <div class="more-info" id="info-4-3">
+                        <h4>SSH Key Setup:</h4>
+                        <pre>
+ssh-keygen
+ssh-copy-id user@pilot1.school.local
+...
+ssh-copy-id user@pilot20.school.local
+                        </pre>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Test connectivity: <code>ansible -i inventory.ini all -m ping</code>
+                    <a href="#" class="more-info-link" data-target="info-4-4">More Info</a>
+                    <div class="more-info" id="info-4-4">
+                        <h4>Testing Ansible Connectivity:</h4>
+                        <pre>
+ansible -i inventory.ini all -m ping
+                        </pre>
+                        <p>
+                            If all return SUCCESS, you’re ready for automated configurations in Phase 2.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 5: Pre-Deployment Verification -->
+        <section class="step-box">
+            <h3>Step 5: Pre-Deployment Verification</h3>
+            <p>
+                Before moving to Phase 2, ensure everything is set. Check VLAN isolation, AD integration, file access, and optionally test Rclone with OneDrive.
+            </p>
+            <ul>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Double-check VLAN isolation.
+                    <a href="#" class="more-info-link" data-target="info-5-1">More Info</a>
+                    <div class="more-info" id="info-5-1">
+                        <h4>VLAN Isolation Check:</h4>
+                        <p>
+                            From a pilot machine, ensure it cannot see resources on the main network if not intended.  
+                            Try pinging main network hosts. If isolated, pings should fail unless routing is allowed.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Confirm Samba/AD integration with <code>wbinfo -u</code> and <code>getent passwd</code>.
+                    <a href="#" class="more-info-link" data-target="info-5-2">More Info</a>
+                    <div class="more-info" id="info-5-2">
+                        <h4>Confirm AD Integration:</h4>
+                        <pre>
+wbinfo -u
+getent passwd "DOMAIN\\username"
+                        </pre>
+                        <p>
+                            If domain users appear, integration is good.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    (Optional) Test Rclone with OneDrive on one machine.
+                    <a href="#" class="more-info-link" data-target="info-5-3">More Info</a>
+                    <div class="more-info" id="info-5-3">
+                        <h4>Rclone OneDrive Setup:</h4>
+                        <p>On a test machine:</p>
+                        <pre>
+rclone config
+# follow prompts for OneDrive
+rclone ls onedrive:
+                        </pre>
+                        <p>
+                            Reference:  
+                            <a href="https://rclone.org/onedrive/" target="_blank">Rclone OneDrive Docs</a>
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <input type="checkbox" class="step-checkbox">
+                    Document any issues and resolve them before Phase 2.
+                    <a href="#" class="more-info-link" data-target="info-5-4">More Info</a>
+                    <div class="more-info" id="info-5-4">
+                        <h4>Documentation:</h4>
+                        <p>
+                            Keep a log of issues found in this phase. Fix configuration errors now to ensure a smoother Phase 2.  
+                            Update your Ansible playbooks or network configs accordingly.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <section id="comments">
+            <h2>Notes and Comments</h2>
+            <p>Use this section to record any additional notes, issues, or ideas discovered during these detailed steps.</p>
+            <textarea id="comments-box" placeholder="Write your detailed notes here..."></textarea>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Classroom Linux Pilot - Phase 1 (Detailed)</p>
+    </footer>
+</body>
+</html>
+
