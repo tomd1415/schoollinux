@@ -47,3 +47,5 @@ public/
 *.iml
 
 node_modules/
+
+uploads/
