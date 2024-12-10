@@ -138,6 +138,8 @@ ping 192.168.8.3
 
         <!-- Step 2: Central File Server Setup (Samba/Winbind) -->
         <section class="step-box" data-step-number="2">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 2: Central File Server (Samba/Winbind)</h3>
             <p>
                 Set up a Debian-based file server integrated with AD. This ensures domain users have consistent home directories across all pilot machines.
@@ -230,10 +232,32 @@ smbclient -L //fileserver -U username
                     </div>
                 </li>
             </ul>
+            </div>
+            <!-- File Upload Container -->
+<div class="file-upload-container">
+    <div class="upload-controls">
+        <!-- Hidden File Input -->
+        <input type="file" id="file-upload-1-2" data-phase="1" data-step="2" hidden>
+        
+        <!-- Styled Label Acting as "Browse" Button -->
+        <label for="file-upload-1-1" class="browse-button">Browse</label>
+        
+        <!-- "Upload" Button -->
+        <button onclick="uploadFile(1, 2)">Upload</button>
+    </div>
+    
+    <!-- Display Selected File Name -->
+    <span id="file-name-1-2" class="file-name">No file selected</span>
+    
+    <div id="uploaded-files-1-2" class="uploaded-files"></div>
+</div>
+              </div>
         </section>
 
         <!-- Step 3: Debian Installation via PXE -->
         <section class="step-box" data-step-number="3">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 3: Debian Installation via PXE (192.168.8.3)</h3>
             <p>
                 Use the PXE server at 192.168.8.3 to perform a netinstall of Debian on all pilot machines. This ensures a uniform base setup.
@@ -291,10 +315,32 @@ dhcp-boot=debian/pxelinux.0,pxeserver,192.168.8.3
                     </div>
                 </li>
             </ul>
+            </div>
+            <!-- File Upload Container -->
+<div class="file-upload-container">
+    <div class="upload-controls">
+        <!-- Hidden File Input -->
+        <input type="file" id="file-upload-1-3" data-phase="1" data-step="3" hidden>
+        
+        <!-- Styled Label Acting as "Browse" Button -->
+        <label for="file-upload-1-3" class="browse-button">Browse</label>
+        
+        <!-- "Upload" Button -->
+        <button onclick="uploadFile(1, 3)">Upload</button>
+    </div>
+    
+    <!-- Display Selected File Name -->
+    <span id="file-name-1-3" class="file-name">No file selected</span>
+    
+    <div id="uploaded-files-1-3" class="uploaded-files"></div>
+</div>
+              </div>
         </section>
 
         <!-- Step 4: Configuration Management (Ansible) -->
         <section class="step-box" data-step-number="4">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 4: Configuration Management (Ansible)</h3>
             <p>
                 Use Ansible to manage and configure all pilot machines consistently. This reduces manual work and ensures uniform settings.
@@ -363,10 +409,32 @@ ansible -i inventory.ini all -m ping
                     </div>
                 </li>
             </ul>
+            </div>
+            <!-- File Upload Container -->
+<div class="file-upload-container">
+    <div class="upload-controls">
+        <!-- Hidden File Input -->
+        <input type="file" id="file-upload-1-4" data-phase="1" data-step="4" hidden>
+        
+        <!-- Styled Label Acting as "Browse" Button -->
+        <label for="file-upload-1-4" class="browse-button">Browse</label>
+        
+        <!-- "Upload" Button -->
+        <button onclick="uploadFile(1, 4)">Upload</button>
+    </div>
+    
+    <!-- Display Selected File Name -->
+    <span id="file-name-1-4" class="file-name">No file selected</span>
+    
+    <div id="uploaded-files-1-4" class="uploaded-files"></div>
+</div>
+              </div>
         </section>
 
         <!-- Step 5: Pre-Deployment Verification -->
         <section class="step-box" data-step-number="5">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 5: Pre-Deployment Verification</h3>
             <p>
                 Before moving to Phase 2, ensure everything is set. Check VLAN isolation, AD integration, file access, and optionally test Rclone with OneDrive.
@@ -430,6 +498,26 @@ rclone ls onedrive:
                     </div>
                 </li>
             </ul>
+            </div>
+            <!-- File Upload Container -->
+<div class="file-upload-container">
+    <div class="upload-controls">
+        <!-- Hidden File Input -->
+        <input type="file" id="file-upload-1-5" data-phase="1" data-step="5" hidden>
+        
+        <!-- Styled Label Acting as "Browse" Button -->
+        <label for="file-upload-1-5" class="browse-button">Browse</label>
+        
+        <!-- "Upload" Button -->
+        <button onclick="uploadFile(1, 5)">Upload</button>
+    </div>
+    
+    <!-- Display Selected File Name -->
+    <span id="file-name-1-5" class="file-name">No file selected</span>
+    
+    <div id="uploaded-files-1-5" class="uploaded-files"></div>
+</div>
+              </div>
         </section>
 
         <section id="comments">
@@ -439,7 +527,7 @@ rclone ls onedrive:
         </section>
     </main>
     <footer>
-        <p>&copy; 2024 Classroom Linux Pilot - Phase 1 (Detailed)</p>
+        <p>&copy; 2024 Tom Duguid - Classroom Linux Pilot - Phase 1 (Detailed)</p>
     </footer>
 </body>
 </html>

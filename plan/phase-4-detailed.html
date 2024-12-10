@@ -9,6 +9,7 @@
     <script src="phases.js" defer></script>
     <script src="phase-4-detailed.js" defer></script>
     <script src="add-step-notes.js" defer></script>
+    <script src="file-upload.js" defer></script>
 </head>
 <body>
     <header>
@@ -35,6 +36,8 @@
 
         <!-- Step 1: Feedback Analysis -->
         <section class="step-box" data-step-number="1">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 1: Feedback Analysis</h3>
             <p>
                 Review all user and staff feedback gathered in Phase 3. Identify common issues, positive aspects, and areas needing improvement.
@@ -77,10 +80,32 @@
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-4-1" data-phase="4" data-step="1" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-4-1" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(4, 1)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-4-1" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-4-1" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 2: Performance and Log Review -->
         <section class="step-box" data-step-number="2">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 2: Performance and Log Review</h3>
             <p>
                 Review system and service logs to ensure the technical side meets expectations. 
@@ -150,10 +175,32 @@ nload
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-4-2" data-phase="4" data-step="2" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-4-2" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(4, 2)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-4-2" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-4-2" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 3: Decision Making and Next Steps -->
         <section class="step-box" data-step-number="3">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 3: Decision Making and Next Steps</h3>
             <p>
                 Based on feedback and performance reviews, decide if the environment is ready to scale beyond the pilot classroom 
@@ -198,10 +245,32 @@ nload
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-4-3" data-phase="4" data-step="3" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-4-3" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(4, 3)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-4-3" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-4-3" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 4: Documentation and Training -->
         <section class="step-box" data-step-number="4">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 4: Documentation and Training</h3>
             <p>
                 Ensure that staff and pupils have the resources they need. Update documentation, create how-to guides, and consider training sessions.
@@ -245,6 +314,26 @@ nload
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-4-4" data-phase="4" data-step="4" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-4-4" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(4, 4)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-4-4" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-4-4" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <section id="comments">
@@ -254,7 +343,7 @@ nload
         </section>
     </main>
     <footer>
-        <p>&copy; 2024 Classroom Linux Pilot - Phase 4 (Detailed)</p>
+        <p>&copy; 2024 Tom Duguid - Classroom Linux Pilot - Phase 4 (Detailed)</p>
     </footer>
 </body>
 </html>

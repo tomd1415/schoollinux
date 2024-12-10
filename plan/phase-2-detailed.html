@@ -9,6 +9,8 @@
     <script src="phases.js" defer></script>
     <script src="phase-2-detailed.js" defer></script>
     <script src="add-step-notes.js" defer></script>
+    <script src="file-upload.js" defer></script>
+
 </head>
 <body>
     <header>
@@ -34,6 +36,8 @@
 
         <!-- Step 1: Operating System Deployment -->
         <section class="step-box" data-step-number="1">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 1: Operating System Deployment</h3>
             <p>
                 Using your PXE setup from Phase 1, install Debian on all 20 classroom machines. This creates a uniform baseline environment.
@@ -71,10 +75,32 @@ ping adcontroller.school.local
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-2-1" data-phase="2" data-step="1" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-2-1" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(2, 1)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-2-1" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-2-1" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 2: Package Installation & Configuration (Ansible) -->
         <section class="step-box" data-step-number="2">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 2: Package Installation & Configuration (Ansible)</h3>
             <p>
                 Use Ansible to uniformly install and configure necessary packages (Samba, Winbind, Rclone, etc.) on all machines.
@@ -173,10 +199,32 @@ pilot20.school.local
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-2-2" data-phase="2" data-step="2" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-2-2" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(2, 2)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-2-2" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-2-2" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 3: AD Domain Integration -->
         <section class="step-box" data-step-number="3">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 3: AD Domain Integration</h3>
             <p>
                 Join each Debian machine to the AD domain so that pupils can log in with their existing credentials.
@@ -214,10 +262,32 @@ getent passwd "SCHOOL\\someuser"
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-2-3" data-phase="2" data-step="3" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-2-3" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(2, 3)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-2-3" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-2-3" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 4: User Home Directories & PAM Configuration -->
         <section class="step-box" data-step-number="4">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 4: User Home Directories & PAM Configuration</h3>
             <p>
                 Configure PAM so that when a domain user logs in, their home directory is created and mounted automatically from the file server.
@@ -260,10 +330,32 @@ ssh SCHOOL\\username@pilot1.school.local
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-2-4" data-phase="2" data-step="4" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-2-4" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(2, 4)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-2-4" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-2-4" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 5: OneDrive Integration (Rclone) -->
         <section class="step-box" data-step-number="5">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 5: OneDrive Integration (Rclone)</h3>
             <p>
                 Mount OneDrive via Rclone for on-demand access to cloud files without local syncing.
@@ -316,10 +408,32 @@ systemctl --user start rclone-onedrive
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-2-5" data-phase="2" data-step="5" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-2-5" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(2, 5)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-2-5" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-2-5" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 6: Verification Tests -->
         <section class="step-box" data-step-number="6">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 6: Verification Tests</h3>
             <p>
                 Before moving to Phase 3, ensure all machines are correctly set up. Test AD logins, home directories, and OneDrive access.
@@ -365,6 +479,26 @@ cat ~/Documents/somefile.txt
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-2-6" data-phase="2" data-step="6" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-2-6" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(2, 6)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-2-6" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-2-6" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <section id="comments">
@@ -374,7 +508,7 @@ cat ~/Documents/somefile.txt
         </section>
     </main>
     <footer>
-        <p>&copy; 2024 Classroom Linux Pilot - Phase 2 (Detailed)</p>
+        <p>&copy; 2024 Tom Duguid - Classroom Linux Pilot - Phase 2 (Detailed)</p>
     </footer>
 </body>
 </html>

@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="phase-3-detailed.css">
     <script src="phases.js" defer></script>
     <script src="phase-3-detailed.js" defer></script>
-<script src="add-step-notes.js" defer></script>
+    <script src="add-step-notes.js" defer></script>
+    <script src="file-upload.js" defer></script>
 
 </head>
 <body>
@@ -36,6 +37,8 @@
 
         <!-- Step 1: User Logins and Experience -->
         <section class="step-box" data-step-number="1">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 1: User Logins and Experience</h3>
             <p>
                 Have a small group of pupils or test accounts log in using their AD credentials across multiple machines. 
@@ -90,10 +93,32 @@ ls /home/SCHOOL/username
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-3-1" data-phase="3" data-step="1" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-3-1" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(3, 1)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-3-1" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-3-1" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 2: Home Directories and OneDrive Access -->
         <section class="step-box" data-step-number="2">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 2: Home Directories and OneDrive Access</h3>
             <p>
                 Verify that user home directories are consistent across different machines and that OneDrive files are accessible.
@@ -153,10 +178,32 @@ nano ~/OneDrive/notes.txt
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-3-2" data-phase="3" data-step="2" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-3-2" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(3, 2)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-3-2" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-3-2" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 3: Performance and Reliability Checks -->
         <section class="step-box" data-step-number="3">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 3: Performance and Reliability Checks</h3>
             <p>
                 Assess how the system performs when multiple users log in simultaneously, transfer files, and access OneDrive. 
@@ -207,10 +254,32 @@ journalctl -u winbind
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-3-3" data-phase="3" data-step="3" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-3-3" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(3, 3)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-3-3" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-3-3" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 4: Feedback and Issue Collection -->
         <section class="step-box" data-step-number="4">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 4: Feedback and Issue Collection</h3>
             <p>
                 Gather qualitative feedback from pupils and staff. Note any usability issues, confusion, or suggested improvements.
@@ -259,10 +328,32 @@ journalctl -u winbind
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-3-4" data-phase="3" data-step="4" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-3-4" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(3, 4)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-3-4" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-3-4" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <!-- Step 5: Refinements and Minor Adjustments -->
         <section class="step-box" data-step-number="5">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 5: Refinements and Minor Adjustments</h3>
             <p>
                 Address the issues found during testing. Update configurations, run Ansible playbooks again, 
@@ -316,6 +407,26 @@ ansible-playbook -i inventory.ini refinements.yml
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- File Upload Container -->
+        <div class="file-upload-container">
+            <div class="upload-controls">
+                <!-- Hidden File Input -->
+                <input type="file" id="file-upload-3-5" data-phase="3" data-step="5" hidden>
+                
+                <!-- Styled Label Acting as "Browse" Button -->
+                <label for="file-upload-3-5" class="browse-button">Browse</label>
+                
+                <!-- "Upload" Button -->
+                <button onclick="uploadFile(3, 5)">Upload</button>
+            </div>
+            
+            <!-- Display Selected File Name -->
+            <span id="file-name-3-5" class="file-name">No file selected</span>
+            
+            <div id="uploaded-files-3-5" class="uploaded-files"></div>
+        </div>
+                      </div>
         </section>
 
         <section id="comments">
@@ -325,7 +436,7 @@ ansible-playbook -i inventory.ini refinements.yml
         </section>
     </main>
     <footer>
-        <p>&copy; 2024 Classroom Linux Pilot - Phase 3 (Detailed)</p>
+        <p>&copy; 2024 Tom Duguid - Classroom Linux Pilot - Phase 3 (Detailed)</p>
     </footer>
 </body>
 </html>

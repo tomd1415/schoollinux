@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 
 # Directory containing your HTML files
-HTML_DIR = './'  # Change this if your HTML files are in a different directory
+HTML_DIR = './plan/'  # Change this if your HTML files are in a different directory
 
 # Regular expression to extract phase number from filename
 FILENAME_REGEX = re.compile(r'phase-(\d+)-detailed\.html$', re.IGNORECASE)
