@@ -94,3 +94,11 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 
 ## Contact
 For any questions or feedback, please contact the project maintainers at support@classroomlinuxpilot.com.
+
+CREATE TABLE notes (
+    id SERIAL PRIMARY KEY,
+    phase_id INTEGER REFERENCES phases(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

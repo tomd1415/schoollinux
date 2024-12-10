@@ -6,7 +6,7 @@ const { Pool } = require('pg');
 const multer = require('multer');
 const fs = require('fs'); // Added for file operations
 const upload = multer({ dest: 'uploads/' });
-const { LearningObjective } = require('./models');
+const { LearningObjective, Phase, Step, Checkbox, sequelize } = require('./models');
 
 const app = express();
 const pool = new Pool({
@@ -276,6 +276,93 @@ app.put('/api/learning-objectives/:id', async (req, res) => {
   } catch (error) {
     console.error('Error updating learning objective:', error);
     res.status(500).json({ error: 'Failed to update learning objective.' });
+  }
+});
+
+// API Endpoints for Checkboxes
+
+// Get all checkboxes
+app.get('/api/checkboxes', async (req, res) => {
+  try {
+    const checkboxes = await Checkbox.findAll({
+      include: {
+        model: Step,
+        as: 'step',
+        include: {
+          model: Phase,
+          as: 'phase',
+        },
+      },
+    });
+    res.json(checkboxes);
+  } catch (error) {
+    console.error('Error fetching checkboxes:', error);
+    res.status(500).json({ error: 'Failed to fetch checkboxes.' });
+  }
+});
+
+// Update a checkbox's completion status
+app.put('/api/checkboxes/:id', async (req, res) => {
+  const checkboxId = req.params.id;
+  const { is_completed } = req.body;
+
+  try {
+    const checkbox = await Checkbox.findByPk(checkboxId);
+    if (!checkbox) {
+      return res.status(404).json({ error: 'Checkbox not found.' });
+    }
+
+    checkbox.is_completed = is_completed;
+    await checkbox.save();
+
+    // Optionally, update Step and Phase completion statuses
+    if (is_completed) {
+      // Check if all checkboxes in the step are completed
+      const incompleteCheckboxes = await Checkbox.count({
+        where: {
+          stepId: checkbox.stepId,
+          is_completed: false,
+        },
+      });
+
+      if (incompleteCheckboxes === 0) {
+        const step = await Step.findByPk(checkbox.stepId);
+        step.is_completed = true;
+        await step.save();
+
+        // Check if all steps in the phase are completed
+        const incompleteSteps = await Step.count({
+          where: {
+            phaseId: step.phaseId,
+            is_completed: false,
+          },
+        });
+
+        if (incompleteSteps === 0) {
+          const phase = await Phase.findByPk(step.phaseId);
+          phase.is_completed = true;
+          await phase.save();
+        }
+      }
+    } else {
+      // If a checkbox is unchecked, ensure the step and phase are also unchecked
+      const step = await Step.findByPk(checkbox.stepId);
+      if (step.is_completed) {
+        step.is_completed = false;
+        await step.save();
+
+        const phase = await Phase.findByPk(step.phaseId);
+        if (phase.is_completed) {
+          phase.is_completed = false;
+          await phase.save();
+        }
+      }
+    }
+
+    res.json(checkbox);
+  } catch (error) {
+    console.error('Error updating checkbox:', error);
+    res.status(500).json({ error: 'Failed to update checkbox.' });
   }
 });
 

@@ -108,6 +108,14 @@ const Checkbox = sequelize.define('Checkbox', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+    stepId: { // Foreign key to Step
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Step,
+            key: 'id',
+        },
+    },
 }, {
     timestamps: true,
     tableName: 'checkboxes',
@@ -142,7 +150,7 @@ Checkbox.belongsTo(Step, {
 });
 
 // Synchronize the models with the database
-sequelize.sync({ alter: true }) // Use { alter: true } to update tables without dropping
+sequelize.sync({ force: true }) // Use { alter: true } to update tables without dropping
     .then(() => {
         console.log('Database synchronized successfully.');
     })

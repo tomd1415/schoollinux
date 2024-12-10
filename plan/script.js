@@ -12,7 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem("global-comments", commentsBox.value);
     });
 
-    // Add checkboxes for phases
+    // Fetch and render checkboxes
+    fetchCheckboxes();
+
+    // Add checkboxes for phases (existing functionality)
     const phaseHeadings = document.querySelectorAll('.phase-box');
     phaseHeadings.forEach((phaseBox, phaseIndex) => {
         const phaseId = `phase-${phaseIndex + 1}`;
@@ -50,10 +53,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Function to fetch checkboxes from the server and render them
+function fetchCheckboxes() {
+    fetch('/api/checkboxes')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(checkbox => {
+                const checkboxElement = document.querySelector(`input[data-id="checkbox-${checkbox.id}"]`);
+                if (checkboxElement) {
+                    checkboxElement.checked = checkbox.is_completed;
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching checkboxes:', error));
+}
+
 // Function to update completion status
 function updateCompletionStatus(id, isChecked, type, parentId = null) {
-    // Example: Send the update to the server
-    fetch(`/api/${type}s/${id}`, {
+    const parsedId = parseId(id, type);
+    const checkboxId = parsedId.databaseId;
+
+    fetch(`/api/checkboxes/${checkboxId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_completed: isChecked }),
@@ -67,6 +87,29 @@ function updateCompletionStatus(id, isChecked, type, parentId = null) {
         }
     })
     .catch(error => console.error(`Error updating ${type}:`, error));
+}
+
+// Helper function to parse the data-id and extract the database ID
+function parseId(id, type) {
+    // Example patterns:
+    // phase-1
+    // step-1-1
+    // sub-step-1-1-1
+    const parts = id.split('-');
+    let databaseId = null;
+
+    if (type === 'phase') {
+        // Assuming phaseIndex corresponds to phase ID in DB
+        databaseId = parseInt(parts[1], 10);
+    } else if (type === 'step') {
+        // Assuming stepIndex corresponds to step ID in DB
+        // This might need adjustment based on actual DB IDs
+        databaseId = parseInt(parts[2], 10);
+    } else if (type === 'checkbox') {
+        databaseId = parseInt(parts[1], 10);
+    }
+
+    return { databaseId };
 }
 
 // Function to check and update phase completion based on its steps
