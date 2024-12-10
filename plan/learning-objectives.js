@@ -45,33 +45,21 @@ function attachEventListeners() {
 
         const debouncedUpdate = debounce(updateObjective, 500);
 
-        if (checkbox) {
-            checkbox.addEventListener('change', () => {
-                const data = { is_completed: checkbox.checked };
-                debouncedUpdate(id, data);
-            });
-        }
+        const handleChange = () => {
+            const data = {
+                id: parseInt(id, 10),
+                is_completed: checkbox.checked,
+                date: dateField.value || null,
+                link: linkField.value || null,
+                comments: commentsField.value || null,
+            };
+            debouncedUpdate(id, data);
+        };
 
-        if (dateField) {
-            dateField.addEventListener('input', () => {
-                const data = { date: dateField.value };
-                debouncedUpdate(id, data);
-            });
-        }
-
-        if (linkField) {
-            linkField.addEventListener('input', () => {
-                const data = { link: linkField.value };
-                debouncedUpdate(id, data);
-            });
-        }
-
-        if (commentsField) {
-            commentsField.addEventListener('input', () => {
-                const data = { comments: commentsField.value };
-                debouncedUpdate(id, data);
-            });
-        }
+        if (checkbox) checkbox.addEventListener('change', handleChange);
+        if (dateField) dateField.addEventListener('input', handleChange);
+        if (linkField) linkField.addEventListener('input', handleChange);
+        if (commentsField) commentsField.addEventListener('input', handleChange);
     });
 }
 
@@ -84,83 +72,19 @@ function debounce(func, delay) {
 }
 
 function updateObjective(id, data) {
-    // Convert empty strings to null for 'link' and other optional fields
-    if (data.link === '') {
-        data.link = null;
-    }
-    if (data.comments === '') {
-        data.comments = null;
-    }
-    if (data.date === '') {
-        data.date = null;
-    }
-
     fetch(`/api/learning-objectives/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
     })
     .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else if (response.status === 404) {
-            // If the record doesn't exist, create a new one
-            return createBlankObjective(id)
-                .then(() => {
-                    // Retry the update after creating the blank record
-                    // Again, convert empty strings to null
-                    if (data.link === '') {
-                        data.link = null;
-                    }
-                    if (data.comments === '') {
-                        data.comments = null;
-                    }
-                    if (data.date === '') {
-                        data.date = null;
-                    }
-                    return fetch(`/api/learning-objectives/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data),
-                    });
-                })
-                .then(retryResponse => {
-                    if (!retryResponse.ok) {
-                        throw new Error('Failed to update objective after creating it.');
-                    }
-                    return retryResponse.json();
-                });
-        } else {
+        if (!response.ok) {
             throw new Error('Failed to update objective');
         }
+        return response.json();
     })
     .then(updatedObjective => {
         console.log('Objective updated:', updatedObjective);
     })
     .catch(error => console.error('Error updating objective:', error));
-}
-
-function createBlankObjective(id) {
-    const blankData = {
-        id: parseInt(id, 10), // Ensure the ID is an integer
-        is_completed: false,
-        date: null,
-        link: null, // Set to null to pass validation
-        comments: '',
-    };
-
-    return fetch('/api/learning-objectives', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(blankData),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to create blank objective');
-        }
-        return response.json();
-    })
-    .then(newObjective => {
-        console.log('Blank objective created:', newObjective);
-    });
 }

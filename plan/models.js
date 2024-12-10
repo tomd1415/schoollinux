@@ -8,51 +8,7 @@ const sequelize = new Sequelize('postgres://setup_linux:exhall2024@localhost:543
     logging: false, // Disable logging; enable if needed for debugging
 });
 
-// Existing LearningObjective Model
-const LearningObjective = sequelize.define('LearningObjective', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        allowNull: false,
-        // autoIncrement removed to allow manual ID assignment
-    },
-    phase: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    step: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    task: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    is_completed: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-    },
-    date: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-    },
-    link: { // Added link field
-        type: DataTypes.STRING,
-        allowNull: true,
-        //validate: {
-        //    isUrl: true,
-        //},
-    },
-    comments: { // Added comments field
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-}, {
-    timestamps: true,
-    tableName: 'learning_objectives',
-});
-
-// New Phase Model
+// Phase Model
 const Phase = sequelize.define('Phase', {
     id: {
         type: DataTypes.INTEGER,
@@ -73,7 +29,7 @@ const Phase = sequelize.define('Phase', {
     tableName: 'phases',
 });
 
-// New Step Model
+// Step Model
 const Step = sequelize.define('Step', {
     id: {
         type: DataTypes.INTEGER,
@@ -84,6 +40,14 @@ const Step = sequelize.define('Step', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    phaseId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Phase,
+            key: 'id',
+        },
+    },
     is_completed: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
@@ -93,7 +57,35 @@ const Step = sequelize.define('Step', {
     tableName: 'steps',
 });
 
-// New Checkbox Model
+// Simplified LearningObjective Model
+const LearningObjective = sequelize.define('LearningObjective', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+    },
+    is_completed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    date: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+    },
+    link: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    comments: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
+}, {
+    timestamps: true,
+    tableName: 'learning_objectives',
+});
+
+// Checkbox Model
 const Checkbox = sequelize.define('Checkbox', {
     id: {
         type: DataTypes.INTEGER,
@@ -104,11 +96,7 @@ const Checkbox = sequelize.define('Checkbox', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    is_completed: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-    },
-    stepId: { // Foreign key to Step
+    stepId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -116,38 +104,22 @@ const Checkbox = sequelize.define('Checkbox', {
             key: 'id',
         },
     },
+    is_completed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
 }, {
     timestamps: true,
     tableName: 'checkboxes',
 });
 
-// Define Associations
-
-// Phase hasMany Steps
-Phase.hasMany(Step, {
-    foreignKey: 'phaseId',
-    as: 'steps',
-    onDelete: 'CASCADE',
-});
-
-// Step belongsTo Phase
-Step.belongsTo(Phase, {
-    foreignKey: 'phaseId',
-    as: 'phase',
-});
-
-// Step hasMany Checkboxes
-Step.hasMany(Checkbox, {
-    foreignKey: 'stepId',
-    as: 'checkboxes',
-    onDelete: 'CASCADE',
-});
-
-// Checkbox belongsTo Step
-Checkbox.belongsTo(Step, {
-    foreignKey: 'stepId',
-    as: 'step',
-});
+// Associations
+Phase.hasMany(Step, { foreignKey: 'phaseId', as: 'steps', onDelete: 'CASCADE' });
+Step.belongsTo(Phase, { foreignKey: 'phaseId', as: 'phase' });
+Step.hasMany(Checkbox, { foreignKey: 'stepId', as: 'checkboxes', onDelete: 'CASCADE' });
+Checkbox.belongsTo(Step, { foreignKey: 'stepId', as: 'step' });
+LearningObjective.belongsTo(Phase, { foreignKey: 'phaseId', as: 'phase' });
+LearningObjective.belongsTo(Step, { foreignKey: 'stepId', as: 'step' });
 
 // Synchronize the models with the database
 sequelize.sync({ alter: true }) // Use { alter: true } to update tables without dropping

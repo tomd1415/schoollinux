@@ -23,16 +23,6 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname))); // Serve static files from the 'public' directory
 app.use(express.json());
 
-app.use('/api/learning-objectives', (req, res, next) => {
-  const { is_completed, date, link, comments } = req.body;
-
-  // Convert empty strings to null
-  req.body.link = link === '' ? null : link;
-  req.body.comments = comments === '' ? null : comments;
-  req.body.date = date === '' ? null : date;
-
-  next();
-});
 
 // API endpoint to save notes
 app.post('/api/save-note', async (req, res) => {
@@ -197,87 +187,44 @@ app.get('/download-file', async (req, res) => {
   }
 });
 
-// **New Update Endpoint for Learning Objectives**
-app.put('/api/learning-objectives/:id', async (req, res) => {
-  const id = req.params.id;
-  const updates = req.body;
-
-  try {
-    const objective = await LearningObjective.findByPk(id);
-    if (objective) {
-      await objective.update(updates);
-      res.json(objective);
-    } else {
-      res.status(404).json({ error: 'Objective not found' });
-    }
-  } catch (error) {
-    console.error('Error updating objective:', error);
-    res.status(500).json({ error: 'Failed to update objective' });
-  }
-});
 
 // Get all learning objectives
 app.get('/api/learning-objectives', async (req, res) => {
   try {
-    const objectives = await LearningObjective.findAll();
-    res.json(objectives);
+      const objectives = await LearningObjective.findAll();
+      res.json(objectives);
   } catch (error) {
-    console.error('Error fetching learning objectives:', error);
-    res.status(500).json({ error: 'Failed to fetch learning objectives.' });
+      console.error('Error fetching learning objectives:', error);
+      res.status(500).json({ error: 'Failed to fetch learning objectives.' });
   }
 });
 
-// Create a new learning objective
-// Create a new learning objective
-app.post('/api/learning-objectives', async (req, res) => {
-  let { id, is_completed, date, link, comments } = req.body;
-
-  // Convert empty strings to null
-  link = link === '' ? null : link;
-  comments = comments === '' ? null : comments;
-  date = date === '' ? null : date;
+// Update or create a learning objective
+app.put('/api/learning-objectives/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { is_completed, date, link, comments } = req.body;
 
   try {
-      // Check if the ID already exists
-      const existingObjective = await LearningObjective.findByPk(id);
-      if (existingObjective) {
-          return res.status(400).json({ error: 'Learning Objective with this ID already exists.' });
-      }
-
-      // Create the new objective
-      const newObjective = await LearningObjective.create({
-          id, // Manually set the ID
+      const [objective, created] = await LearningObjective.upsert({
+          id,
           is_completed,
           date,
           link,
           comments,
-      });
+      }, { returning: true });
 
-      res.status(201).json(newObjective);
-  } catch (error) {
-      console.error('Error creating learning objective:', error);
-      res.status(500).json({ error: 'Failed to create learning objective.' });
-  }
-});
-
-// Update a learning objective
-app.put('/api/learning-objectives/:id', async (req, res) => {
-  const id = req.params.id;
-  const { is_completed, date, link, comments } = req.body;
-
-  try {
-    const objective = await LearningObjective.findByPk(id);
-    if (objective) {
-      await objective.update({ is_completed, date, link, comments });
       res.json(objective);
-    } else {
-      res.status(404).json({ error: 'Learning Objective not found.' });
-    }
   } catch (error) {
-    console.error('Error updating learning objective:', error);
-    res.status(500).json({ error: 'Failed to update learning objective.' });
+      console.error('Error updating learning objective:', error);
+      res.status(500).json({ error: 'Failed to update learning objective.' });
   }
 });
+
+// Serve learning objectives page
+app.get('/learning-objectives.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'learning-objectives.html'));
+});
+
 
 // API Endpoints for Checkboxes
 
