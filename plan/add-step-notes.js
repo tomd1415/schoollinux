@@ -1,6 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
   const stepBoxes = document.querySelectorAll('.step-box');
 
+  // Debounce function
+  function debounce(func, delay) {
+    let debounceTimer;
+    return function() {
+      const context = this;
+      const args = arguments;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => func.apply(context, args), delay);
+    };
+  }
+
   stepBoxes.forEach((box) => {
     const phase = document.title.match(/Phase (\d)/)[1];
     const step = box.querySelector('h3').innerText;
@@ -25,8 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .catch((err) => console.error(err));
 
-    // Save notes to the server on input
-    textarea.addEventListener('input', () => {
+    // Save note function
+    function saveNote() {
       fetch('/api/save-note', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -39,7 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
         .then((response) => response.text())
         .then((data) => console.log(data))
         .catch((err) => console.error(err));
-    });
+    }
+
+    // Use debounce to delay saveNote execution
+    const debouncedSaveNote = debounce(saveNote, 1000); // Adjust delay as needed
+
+    // Save note on textarea input
+    textarea.addEventListener('input', debouncedSaveNote);
 
     notesContainer.appendChild(textarea);
     box.appendChild(notesContainer);

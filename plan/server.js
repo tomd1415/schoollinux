@@ -15,14 +15,17 @@ const pool = new Pool({
 
 // Middlewares
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'plan')));
+app.use(express.static(__dirname)); // Serve static files from the project root
 
 // API endpoint to save notes
 app.post('/api/save-note', async (req, res) => {
   const { phase, step, content } = req.body;
   try {
     await pool.query(
-      'INSERT INTO notes (phase, step, content) VALUES ($1, $2, $3)',
+      `INSERT INTO notes (phase, step, content)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (phase, step)
+       DO UPDATE SET content = EXCLUDED.content`,
       [phase, step, content]
     );
     res.status(200).send('Note saved');
@@ -47,6 +50,11 @@ app.get('/api/get-notes', async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
+// Serve index.html at the root URL
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.listen(3500, () => {
+  console.log('Server running on http://localhost:3500');
 });
