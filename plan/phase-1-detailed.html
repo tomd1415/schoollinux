@@ -115,13 +115,24 @@ ping 192.168.8.3
                 </li>
             </ul>
         </div>
-            <div class="file-upload-container">
-                <div class="upload-controls">
-                <input type="file" id="file-upload-1-1" data-phase="1" data-step="1">
-                <button onclick="uploadFile(1, 1)">Upload</button>
-                </div>
-              <div id="uploaded-files-1-1"></div>
-            </div>
+<!-- File Upload Container -->
+<div class="file-upload-container">
+    <div class="upload-controls">
+        <!-- Hidden File Input -->
+        <input type="file" id="file-upload-1-1" data-phase="1" data-step="1" hidden>
+        
+        <!-- Styled Label Acting as "Browse" Button -->
+        <label for="file-upload-1-1" class="browse-button">Browse</label>
+        
+        <!-- "Upload" Button -->
+        <button onclick="uploadFile(1, 1)">Upload</button>
+    </div>
+    
+    <!-- Display Selected File Name -->
+    <span id="file-name-1-1" class="file-name">No file selected</span>
+    
+    <div id="uploaded-files-1-1" class="uploaded-files"></div>
+</div>
               </div>
         </section>
 

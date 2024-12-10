@@ -26,6 +26,9 @@ function uploadFile(phase, step) {
         console.log(data);
         loadUploadedFiles(phase, step);
         alert("File uploaded successfully.");
+        // Reset file input and display
+        fileInput.value = '';
+        document.getElementById(`file-name-${phase}-${step}`).textContent = 'No file selected';
       })
       .catch(err => {
         console.error(err);
@@ -98,9 +101,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load existing files for each step
     const steps = document.querySelectorAll('.step-box');
     steps.forEach(stepBox => {
-      const phaseMatch = document.title.match(/Phase (\d)/);
+      const phaseMatch = document.title.match(/Phase (\d+)/);
       const phase = phaseMatch ? phaseMatch[1] : '1';
       const stepNumber = stepBox.getAttribute('data-step-number'); // Correct extraction
       loadUploadedFiles(phase, stepNumber);
+    });
+    
+    // Add event listeners to file inputs to display selected file name
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            const phase = input.getAttribute('data-phase');
+            const step = input.getAttribute('data-step');
+            const fileNameDisplay = document.getElementById(`file-name-${phase}-${step}`);
+            if (input.files.length > 0) {
+                fileNameDisplay.textContent = input.files[0].name;
+            } else {
+                fileNameDisplay.textContent = 'No file selected';
+            }
+        });
     });
 });

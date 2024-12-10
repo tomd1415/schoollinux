@@ -125,7 +125,7 @@ a.selected {
 .upload-controls {
     display: flex;
     align-items: center;
-    gap: 10px; /* Space between input and button */
+    gap: 10px; /* Space between elements */
 }
 
 /* Style the upload button */
@@ -168,6 +168,37 @@ a.selected {
     text-decoration: underline;
 }
 
+/* Style for the custom "Browse" button */
+.browse-button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #005f73;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1em;
+    text-align: center;
+}
+
+.browse-button:hover {
+    background-color: #0a9396;
+}
+
+/* Style for the file name display */
+.file-name {
+    margin-left: 10px;
+    font-style: italic;
+    color: #555;
+}
+
+/* Ensure .upload-controls aligns items properly */
+.upload-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between elements */
+}
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .step-inner {
