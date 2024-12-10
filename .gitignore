@@ -49,3 +49,5 @@ public/
 node_modules/
 
 uploads/
+
+backup/

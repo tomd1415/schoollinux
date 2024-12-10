@@ -1,0 +1,88 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+header {
+    background-color: #005f73;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+}
+
+main {
+    padding: 20px;
+}
+
+.objectives-section {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 30px;
+}
+
+.objectives-section h2, .objectives-section h3 {
+    color: #005f73;
+    margin-top: 0;
+}
+
+.objectives-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.objectives-list li {
+    background-color: #e6f2f7; /* light blue tint */
+    border: 1px solid #b3d9e6;
+    border-radius: 10px;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+    padding: 15px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.objectives-list li label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.objective-details {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f0f8ff;
+    border-left: 3px solid #005f73;
+    border-radius: 5px;
+}
+
+.objective-details input[type="date"],
+.objective-details input[type="url"],
+.objective-details textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+textarea {
+    height: 80px;
+}
+
+footer {
+    background-color: #94d2bd;
+    color: #333;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}

@@ -137,7 +137,7 @@ ping 192.168.8.3
         </section>
 
         <!-- Step 2: Central File Server Setup (Samba/Winbind) -->
-        <section class="step-box">
+        <section class="step-box" data-step-number="2">
             <h3>Step 2: Central File Server (Samba/Winbind)</h3>
             <p>
                 Set up a Debian-based file server integrated with AD. This ensures domain users have consistent home directories across all pilot machines.
@@ -233,7 +233,7 @@ smbclient -L //fileserver -U username
         </section>
 
         <!-- Step 3: Debian Installation via PXE -->
-        <section class="step-box">
+        <section class="step-box" data-step-number="3">
             <h3>Step 3: Debian Installation via PXE (192.168.8.3)</h3>
             <p>
                 Use the PXE server at 192.168.8.3 to perform a netinstall of Debian on all pilot machines. This ensures a uniform base setup.
@@ -294,7 +294,7 @@ dhcp-boot=debian/pxelinux.0,pxeserver,192.168.8.3
         </section>
 
         <!-- Step 4: Configuration Management (Ansible) -->
-        <section class="step-box">
+        <section class="step-box" data-step-number="4">
             <h3>Step 4: Configuration Management (Ansible)</h3>
             <p>
                 Use Ansible to manage and configure all pilot machines consistently. This reduces manual work and ensures uniform settings.
@@ -366,7 +366,7 @@ ansible -i inventory.ini all -m ping
         </section>
 
         <!-- Step 5: Pre-Deployment Verification -->
-        <section class="step-box">
+        <section class="step-box" data-step-number="5">
             <h3>Step 5: Pre-Deployment Verification</h3>
             <p>
                 Before moving to Phase 2, ensure everything is set. Check VLAN isolation, AD integration, file access, and optionally test Rclone with OneDrive.
