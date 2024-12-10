@@ -150,7 +150,7 @@ Checkbox.belongsTo(Step, {
 });
 
 // Synchronize the models with the database
-sequelize.sync({ force: true }) // Use { alter: true } to update tables without dropping
+sequelize.sync({ alter: true }) // Use { alter: true } to update tables without dropping
     .then(() => {
         console.log('Database synchronized successfully.');
     })
