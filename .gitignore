@@ -1,25 +1,49 @@
-# Ignore node_modules directory
-node_modules/
+# Ignore temporary files created by editors
+*~
 
-# Ignore log files
-*.log
+# Ignore coverage reports
+coverage/
+*.lcov
 
-# Ignore build directories
-dist/
-build/
+# Ignore dependency directories
+jspm_packages/
 
-# Ignore OS generated files
-.DS_Store
-Thumbs.db
+# Ignore temporary files created by the system
+*.swp
+*.swo
 
-# Ignore environment variable files
-.env
+# Ignore npm debug log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Ignore compiled Python files
-*.pyc
-__pycache__/
+# Ignore macOS specific files
+._*
 
-# Ignore IDE specific files
-.vscode/
+# Ignore SASS cache
+.sass-cache/
+
+# Ignore Bower components
+bower_components/
+
+# Ignore TypeScript build files
+*.tsbuildinfo
+
+# Ignore Parcel cache
+.cache/
+
+# Ignore Next.js build output
+.next/
+
+# Ignore Nuxt.js build output
+.nuxt/
+
+# Ignore Gatsby files
+.cache/
+public/
+
+# Ignore temporary files created by JetBrains IDEs
 .idea/
 *.iml
+
+node_modules/

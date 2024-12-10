@@ -95,3 +95,100 @@ a.selected {
     color: #aaa;
     text-decoration: underline;
 }
+
+/* New inner container for step content and file upload */
+.step-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* Ensure step-content takes up available space */
+.step-content {
+    flex: 1;
+    margin-right: 20px;
+}
+
+/* Style for the file upload container */
+.file-upload-container {
+    background-color: #f0f8ff; /* AliceBlue for a subtle difference */
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Style for the upload controls */
+.upload-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between input and button */
+}
+
+/* Style the upload button */
+.upload-controls button {
+    padding: 8px 16px;
+    background-color: #005f73;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.upload-controls button:hover {
+    background-color: #0a9396;
+}
+
+/* Style the uploaded files section */
+.uploaded-files {
+    margin-top: 15px;
+    width: 100%;
+    background-color: #e6e6e6; /* Light grey for sunken effect */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    max-height: 150px; /* Adjust as needed */
+    overflow-y: auto;
+}
+
+/* Style links to uploaded files */
+.uploaded-files a {
+    display: block;
+    color: #005f73;
+    text-decoration: none;
+    margin-bottom: 5px;
+}
+
+.uploaded-files a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .step-inner {
+        flex-direction: column;
+    }
+    
+    .step-box {
+        flex-direction: column;
+    }
+    
+    .file-upload-container {
+        margin-top: 20px;
+        width: 100%;
+    }
+    
+    .upload-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .upload-controls button {
+        width: 100%;
+    }
+}

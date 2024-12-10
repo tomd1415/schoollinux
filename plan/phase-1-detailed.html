@@ -9,6 +9,7 @@
     <script src="phases.js" defer></script>
     <script src="phase-1-detailed.js" defer></script>
     <script src="add-step-notes.js" defer></script>
+    <script src="file-upload.js" defer></script>
 </head>
 <body>
     <header>
@@ -34,6 +35,8 @@
 
         <!-- Step 1: Network Isolation (VLAN/Subnet) -->
         <section class="step-box">
+            <div class="step-inner">
+                <div class="step-content">
             <h3>Step 1: Network Isolation (VLAN/Subnet)</h3>
             <p>
                 Create a dedicated VLAN/subnet (192.168.8.0/24) and configure DHCP using dnsmasq. 
@@ -111,6 +114,15 @@ ping 192.168.8.3
                     </div>
                 </li>
             </ul>
+        </div>
+            <div class="file-upload-container">
+                <div class="upload-controls">
+                <input type="file" id="file-upload-1-1" data-phase="1" data-step="Step 1: Network Isolation">
+                <button onclick="uploadFile(1, 'Step 1: Network Isolation')">Upload</button>
+                </div>
+              <div id="uploaded-files-1-1"></div>
+            </div>
+              </div>
         </section>
 
         <!-- Step 2: Central File Server Setup (Samba/Winbind) -->
