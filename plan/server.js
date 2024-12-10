@@ -141,6 +141,48 @@ app.delete('/api/delete-file', async (req, res) => {
   }
 });
 
+// **New Download Endpoint**
+app.get('/download-file', async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).send('Missing file id');
+  }
+
+  try {
+    // Fetch file details from the database
+    const result = await pool.query(
+      'SELECT filename, filepath FROM files WHERE id = $1',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).send('File not found');
+    }
+
+    const { filename, filepath } = result.rows[0];
+
+    // Resolve the absolute path of the file
+    const absolutePath = path.resolve(filepath);
+
+    // Check if file exists
+    if (!fs.existsSync(absolutePath)) {
+      return res.status(404).send('File not found on server');
+    }
+
+    // Set headers to prompt download with the original filename
+    res.download(absolutePath, filename, (err) => {
+      if (err) {
+        console.error(`Error sending file: ${err}`);
+        // Don't send headers since they might have been sent already
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error downloading file');
+  }
+});
+
 // Serve index.html at the root URL
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
