@@ -47,7 +47,7 @@
             </p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-1-1">
                     Instruct test users to log in on various pilot machines with their AD credentials.
                     <a href="#" class="more-info-link" data-target="info-1-1">More Info</a>
                     <div class="more-info" id="info-1-1">
@@ -63,7 +63,7 @@ journalctl -u smbd
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-1-2">
                     Confirm that login times are reasonable and users don’t face delays.
                     <a href="#" class="more-info-link" data-target="info-1-2">More Info</a>
                     <div class="more-info" id="info-1-2">
@@ -79,7 +79,7 @@ journalctl -u smbd
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-1-3">
                     Observe if home directories mount correctly and initial files are accessible.
                     <a href="#" class="more-info-link" data-target="info-1-3">More Info</a>
                     <div class="more-info" id="info-1-3">
@@ -126,7 +126,7 @@ ls /home/SCHOOL/username
             </p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-2-1">
                     Ask users to open their home directories on multiple machines, ensuring the same files appear.
                     <a href="#" class="more-info-link" data-target="info-2-1">More Info</a>
                     <div class="more-info" id="info-2-1">
@@ -143,7 +143,7 @@ touch ~/testfile.txt
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-2-2">
                     Open OneDrive mounts to list and access files.
                     <a href="#" class="more-info-link" data-target="info-2-2">More Info</a>
                     <div class="more-info" id="info-2-2">
@@ -162,7 +162,7 @@ journalctl --user -u rclone-onedrive
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-2-3">
                     Test file editing and saving back to OneDrive.
                     <a href="#" class="more-info-link" data-target="info-2-3">More Info</a>
                     <div class="more-info" id="info-2-3">
@@ -212,7 +212,7 @@ nano ~/OneDrive/notes.txt
             </p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-3-1">
                     Monitor login times under simultaneous logins.
                     <a href="#" class="more-info-link" data-target="info-3-1">More Info</a>
                     <div class="more-info" id="info-3-1">
@@ -224,7 +224,7 @@ nano ~/OneDrive/notes.txt
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-3-2">
                     Test file transfers of both small and large files from OneDrive and the file server.
                     <a href="#" class="more-info-link" data-target="info-3-2">More Info</a>
                     <div class="more-info" id="info-3-2">
@@ -240,7 +240,7 @@ time cat ~/Documents/largevideo.mp4 > /dev/null
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-3-3">
                     Note any latency or errors and check logs for hints.
                     <a href="#" class="more-info-link" data-target="info-3-3">More Info</a>
                     <div class="more-info" id="info-3-3">
@@ -287,7 +287,7 @@ journalctl -u winbind
             </p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-3-4-1">
                     Conduct short surveys or ask direct questions about ease of use and performance.
                     <a href="#" class="more-info-link" data-target="info-4-1">More Info</a>
                     <div class="more-info" id="info-4-1">
@@ -303,7 +303,7 @@ journalctl -u winbind
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-3-4-2">
                     Record any error messages or unexpected behaviours.
                     <a href="#" class="more-info-link" data-target="info-4-2">More Info</a>
                     <div class="more-info" id="info-4-2">
@@ -316,7 +316,7 @@ journalctl -u winbind
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-3-4-3">
                     Document suggestions from users on how to improve file access or login procedures.
                     <a href="#" class="more-info-link" data-target="info-4-3">More Info</a>
                     <div class="more-info" id="info-4-3">
@@ -362,7 +362,7 @@ journalctl -u winbind
             </p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-3-5-1">
                     If login times are slow, consider caching or adjusting Winbind configuration.
                     <a href="#" class="more-info-link" data-target="info-5-1">More Info</a>
                     <div class="more-info" id="info-5-1">
@@ -379,7 +379,7 @@ winbind cache time = 300
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-3-5-2">
                     If OneDrive is sluggish, explore Rclone caching or verify network throughput.
                     <a href="#" class="more-info-link" data-target="info-5-2">More Info</a>
                     <div class="more-info" id="info-5-2">
@@ -393,7 +393,7 @@ rclone mount onedrive: ~/OneDrive --vfs-cache-mode full
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-3-5-3">
                     Update and rerun Ansible playbooks to deploy these refinements across all machines.
                     <a href="#" class="more-info-link" data-target="info-5-3">More Info</a>
                     <div class="more-info" id="info-5-3">

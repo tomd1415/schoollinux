@@ -46,7 +46,7 @@
             <p><strong>Key Tasks:</strong></p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-1-1">
                     Configure a VLAN/subnet on your switch and server to host the 20 pilot machines.
                     <a href="#" class="more-info-link" data-target="info-1-1">More Info</a>
                     <div class="more-info" id="info-1-1">
@@ -69,7 +69,7 @@ wr mem
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-1-2">
                     Set up dnsmasq for DHCP on the VLAN interface.
                     <a href="#" class="more-info-link" data-target="info-1-2">More Info</a>
                     <div class="more-info" id="info-1-2">
@@ -99,7 +99,7 @@ sudo systemctl restart dnsmasq
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-1-3">
                     Test connectivity and DHCP: Confirm that pilot machines receive IPs and can ping the PXE server (192.168.8.3).
                     <a href="#" class="more-info-link" data-target="info-1-3">More Info</a>
                     <div class="more-info" id="info-1-3">
@@ -147,7 +147,7 @@ ping 192.168.8.3
             </p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-2-1">
                     Install Samba and Winbind packages.
                     <a href="#" class="more-info-link" data-target="info-2-1">More Info</a>
                     <div class="more-info" id="info-2-1">
@@ -163,7 +163,7 @@ sudo apt install samba winbind libpam-winbind libnss-winbind
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-2-2">
                     Configure <code>/etc/samba/smb.conf</code> for AD integration (security = ads, specify workgroup and realm).
                     <a href="#" class="more-info-link" data-target="info-2-2">More Info</a>
                     <div class="more-info" id="info-2-2">
@@ -185,7 +185,7 @@ sudo apt install samba winbind libpam-winbind libnss-winbind
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-2-3">
                     Join the server to the AD domain and verify domain users visibility.
                     <a href="#" class="more-info-link" data-target="info-2-3">More Info</a>
                     <div class="more-info" id="info-2-3">
@@ -201,7 +201,7 @@ getent passwd
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-2-4">
                     Set up the [homes] share to serve user home directories.
                     <a href="#" class="more-info-link" data-target="info-2-4">More Info</a>
                     <div class="more-info" id="info-2-4">
@@ -219,7 +219,7 @@ sudo chmod 700 /home/DOMAIN
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-2-5">
                     Test access with <code>smbclient</code>.
                     <a href="#" class="more-info-link" data-target="info-2-5">More Info</a>
                     <div class="more-info" id="info-2-5">
@@ -265,7 +265,7 @@ smbclient -L //fileserver -U username
             </p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-3-1">
                     Place Debian netboot files on the PXE server.
                     <a href="#" class="more-info-link" data-target="info-3-1">More Info</a>
                     <div class="more-info" id="info-3-1">
@@ -289,7 +289,7 @@ dhcp-boot=debian/pxelinux.0,pxeserver,192.168.8.3
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-3-2">
                     Boot one test machine via PXE and run through the Debian network installation.
                     <a href="#" class="more-info-link" data-target="info-3-2">More Info</a>
                     <div class="more-info" id="info-3-2">
@@ -303,7 +303,7 @@ dhcp-boot=debian/pxelinux.0,pxeserver,192.168.8.3
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-3-3">
                     After a successful test, replicate for all 20 machines.
                     <a href="#" class="more-info-link" data-target="info-3-3">More Info</a>
                     <div class="more-info" id="info-3-3">
@@ -348,7 +348,7 @@ dhcp-boot=debian/pxelinux.0,pxeserver,192.168.8.3
             </p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-4-1">
                     Install Ansible on the control machine.
                     <a href="#" class="more-info-link" data-target="info-4-1">More Info</a>
                     <div class="more-info" id="info-4-1">
@@ -364,7 +364,7 @@ sudo apt install ansible
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-4-2">
                     Create an inventory file listing the 20 machines.
                     <a href="#" class="more-info-link" data-target="info-4-2">More Info</a>
                     <div class="more-info" id="info-4-2">
@@ -382,7 +382,7 @@ pilot20.school.local
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-1-4-3">
                     Set up SSH key-based authentication to all machines.
                     <a href="#" class="more-info-link" data-target="info-4-3">More Info</a>
                     <div class="more-info" id="info-4-3">
@@ -396,7 +396,7 @@ ssh-copy-id user@pilot20.school.local
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-4-4">
                     Test connectivity: <code>ansible -i inventory.ini all -m ping</code>
                     <a href="#" class="more-info-link" data-target="info-4-4">More Info</a>
                     <div class="more-info" id="info-4-4">
@@ -442,7 +442,7 @@ ansible -i inventory.ini all -m ping
             </p>
             <ul>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-5-1">
                     Double-check VLAN isolation.
                     <a href="#" class="more-info-link" data-target="info-5-1">More Info</a>
                     <div class="more-info" id="info-5-1">
@@ -454,7 +454,7 @@ ansible -i inventory.ini all -m ping
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox"  data-id="sub-step-1-5-2">
                     Confirm Samba/AD integration with <code>wbinfo -u</code> and <code>getent passwd</code>.
                     <a href="#" class="more-info-link" data-target="info-5-2">More Info</a>
                     <div class="more-info" id="info-5-2">
@@ -469,7 +469,7 @@ getent passwd "DOMAIN\\username"
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-5-3">
                     (Optional) Test Rclone with OneDrive on one machine.
                     <a href="#" class="more-info-link" data-target="info-5-3">More Info</a>
                     <div class="more-info" id="info-5-3">
@@ -487,7 +487,7 @@ rclone ls onedrive:
                     </div>
                 </li>
                 <li>
-                    <input type="checkbox" class="step-checkbox">
+                    <input type="checkbox" class="step-checkbox" data-id="sub-step-1-5-4">
                     Document any issues and resolve them before Phase 2.
                     <a href="#" class="more-info-link" data-target="info-5-4">More Info</a>
                     <div class="more-info" id="info-5-4">
