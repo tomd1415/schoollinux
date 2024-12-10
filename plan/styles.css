@@ -93,3 +93,9 @@ footer {
 }
 
 
+a.selected {
+    background-color: #005f73;
+    font-weight:900;
+    color: #aaa;
+    text-decoration: underline;
+}
