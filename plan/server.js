@@ -228,89 +228,129 @@ app.get('/learning-objectives.html', (req, res) => {
 
 // API Endpoints for Checkboxes
 
+// ===== Checkbox API Endpoints ===== //
+
+// Get a single checkbox by ID
+/*
+app.get('/api/checkboxes/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+      const checkbox = await Checkbox.findByPk(id);
+      if (checkbox) {
+          res.status(200).json(checkbox);
+      } else {
+          res.status(404).json({ error: 'Checkbox not found' });
+      }
+  } catch (error) {
+      console.error('Error fetching checkbox:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+*/
 // Get all checkboxes
 app.get('/api/checkboxes', async (req, res) => {
   try {
-    const checkboxes = await Checkbox.findAll({
-      include: {
-        model: Step,
-        as: 'step',
-        include: {
-          model: Phase,
-          as: 'phase',
-        },
-      },
-    });
-    res.json(checkboxes);
+      const checkboxes = await Checkbox.findAll();
+      res.status(200).json(checkboxes);
   } catch (error) {
-    console.error('Error fetching checkboxes:', error);
-    res.status(500).json({ error: 'Failed to fetch checkboxes.' });
+      console.error('Error fetching all checkboxes:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
+/*
 // Update a checkbox's completion status
 app.put('/api/checkboxes/:id', async (req, res) => {
-  const checkboxId = req.params.id;
+  const { id } = req.params;
   const { is_completed } = req.body;
 
   try {
-    const checkbox = await Checkbox.findByPk(checkboxId);
-    if (!checkbox) {
-      return res.status(404).json({ error: 'Checkbox not found.' });
-    }
-
-    checkbox.is_completed = is_completed;
-    await checkbox.save();
-
-    // Optionally, update Step and Phase completion statuses
-    if (is_completed) {
-      // Check if all checkboxes in the step are completed
-      const incompleteCheckboxes = await Checkbox.count({
-        where: {
-          stepId: checkbox.stepId,
-          is_completed: false,
-        },
-      });
-
-      if (incompleteCheckboxes === 0) {
-        const step = await Step.findByPk(checkbox.stepId);
-        step.is_completed = true;
-        await step.save();
-
-        // Check if all steps in the phase are completed
-        const incompleteSteps = await Step.count({
-          where: {
-            phaseId: step.phaseId,
-            is_completed: false,
-          },
-        });
-
-        if (incompleteSteps === 0) {
-          const phase = await Phase.findByPk(step.phaseId);
-          phase.is_completed = true;
-          await phase.save();
-        }
+      const checkbox = await Checkbox.findByPk(id);
+      if (!checkbox) {
+          return res.status(404).json({ error: 'Checkbox not found' });
       }
-    } else {
-      // If a checkbox is unchecked, ensure the step and phase are also unchecked
-      const step = await Step.findByPk(checkbox.stepId);
-      if (step.is_completed) {
-        step.is_completed = false;
-        await step.save();
 
-        const phase = await Phase.findByPk(step.phaseId);
-        if (phase.is_completed) {
-          phase.is_completed = false;
-          await phase.save();
-        }
-      }
-    }
+      checkbox.is_completed = is_completed;
+      await checkbox.save();
 
-    res.json(checkbox);
+      res.status(200).json(checkbox);
   } catch (error) {
-    console.error('Error updating checkbox:', error);
-    res.status(500).json({ error: 'Failed to update checkbox.' });
+      console.error('Error updating checkbox:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
   }
+});
+*/
+
+// Get a single checkbox by stepId
+app.get('/api/checkboxes/:stepId', async (req, res) => {
+    const { stepId } = req.params;
+    try {
+        // Find or create the Step
+        let step = await Step.findOne({ where: { stepId } });
+        if (!step) {
+            step = await Step.create({
+                stepId,
+                name: stepId, // Adjust the name as necessary
+                phaseId: 1,    // Set the appropriate phaseId
+                is_completed: false,
+            });
+            console.log(`Step with stepId ${stepId} created.`);
+        }
+
+        // Find or create the Checkbox
+        let checkbox = await Checkbox.findOne({ where: { stepId } });
+        if (!checkbox) {
+            checkbox = await Checkbox.create({
+                stepId,
+                is_completed: false,
+            });
+            console.log(`Checkbox with stepId ${stepId} created.`);
+        }
+
+        res.status(200).json(checkbox);
+    } catch (error) {
+        console.error('Error fetching or creating checkbox:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Update a checkbox's completion status by stepId
+app.put('/api/checkboxes/:stepId', async (req, res) => {
+    const { stepId } = req.params;
+    const { is_completed } = req.body;
+
+    try {
+        // Find or create the Step
+        let step = await Step.findOne({ where: { stepId } });
+        if (!step) {
+            step = await Step.create({
+                stepId,
+                name: stepId, // Adjust the name as necessary
+                phaseId: 1,    // Set the appropriate phaseId
+                is_completed: is_completed || false,
+            });
+            console.log(`Step with stepId ${stepId} created.`);
+        }
+
+        // Find or create the Checkbox
+        let checkbox = await Checkbox.findOne({ where: { stepId } });
+        if (!checkbox) {
+            checkbox = await Checkbox.create({
+                stepId,
+                is_completed,
+            });
+            console.log(`Checkbox with stepId ${stepId} created and set to ${is_completed}.`);
+        } else {
+            // Update existing checkbox
+            checkbox.is_completed = is_completed;
+            await checkbox.save();
+            console.log(`Checkbox with stepId ${stepId} updated to ${is_completed}.`);
+        }
+
+        res.status(200).json(checkbox);
+    } catch (error) {
+        console.error('Error updating checkbox:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 // Handle undefined API routes

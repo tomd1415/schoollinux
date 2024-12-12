@@ -1,3 +1,4 @@
+/*
 document.addEventListener('DOMContentLoaded', () => {
     const commentsBox = document.getElementById("comments-box");
     const savedComments = localStorage.getItem("phase2-detailed-comments");
@@ -25,4 +26,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-
+*/

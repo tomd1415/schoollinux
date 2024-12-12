@@ -1,3 +1,5 @@
+// phase-1-detailed.js
+/*
 document.addEventListener('DOMContentLoaded', () => {
     const commentsBox = document.getElementById("comments-box");
     const savedComments = localStorage.getItem("phase1-detailed-comments");
@@ -17,12 +19,59 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const targetId = link.getAttribute('data-target');
             const infoBox = document.getElementById(targetId);
-            if (infoBox.style.display === 'block') {
-                infoBox.style.display = 'none';
-            } else {
-                infoBox.style.display = 'block';
-            }
+            infoBox.style.display = (infoBox.style.display === 'block') ? 'none' : 'block';
         });
     });
-});
 
+    // Handle Checkboxes
+    handleCheckboxes();
+});
+*/
+/*
+function handleCheckboxes() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][data-id]');
+
+    checkboxes.forEach(checkbox => {
+        const stepId = checkbox.dataset.id;
+
+        // Fetch the current state from the server and set the checkbox
+        fetch(`/api/checkboxes/${encodeURIComponent(stepId)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch checkbox with stepId ${stepId}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                checkbox.checked = data.is_completed;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        // Add event listener to update the server when the checkbox is toggled
+        checkbox.addEventListener('change', () => {
+            const isCompleted = checkbox.checked;
+
+            fetch(`/api/checkboxes/${encodeURIComponent(stepId)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ is_completed: isCompleted }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to update checkbox with stepId ${stepId}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(`Checkbox stepId ${stepId} updated to ${data.is_completed}`);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+} */
