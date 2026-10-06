@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What I have learnt: A tracker for a Debian classroom pilot on Active Directory</title>
+<link rel="stylesheet" href="learnt.css">
+<style>
+  /* page-only additions; the shared learnt.css stays identical across projects */
+  main th, main td { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="inner">
+    <p class="meta"><a href="../../index.html">What I have learnt</a> · project: <code>schoollinux</code> · a plan to move one classroom of 20 machines to Debian with Active Directory sign-in, and the small web app I built to track it</p>
+    <h1>A tracker for a Debian classroom pilot on Active Directory</h1>
+    <p class="meta">Reconstructed on 2026-10-06 from the repository record (git history 2024-12-09–2024-12-12, README.md, the plan pages and code in <code>plan/</code>), not written at the time · last commit "tick boxes working" (<code>ed03d07</code>, 2024-12-12); nothing in the repository shows whether the pilot itself went ahead · for revisiting later, not for reference while working (that is README.md and the phase pages in <code>plan/</code>)</p>
+  </div>
+</header>
+
+<main>
+<nav class="toc" aria-label="Contents">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#big-picture">The big picture</a></li>
+    <li><a href="#plan">The plan in four phases</a></li>
+    <li><a href="#ad">Joining Linux machines to Active Directory</a></li>
+    <li><a href="#onedrive">OneDrive through rclone</a></li>
+    <li><a href="#tracker">The tracker app</a></li>
+    <li><a href="#traps">Traps, in one place</a></li>
+    <li><a href="#lessons">General lessons</a></li>
+    <li><a href="#results">Timeline and where things are stored</a></li>
+    <li><a href="#test">Test yourself</a></li>
+    <li><a href="#next">Still to do</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ol>
+</nav>
+
+<h2 id="big-picture">1. The big picture</h2>
+<p>A four-phase plan for moving one classroom of 20 machines to Debian, with pupils signing in with their Active Directory accounts, home folders on a central server and OneDrive through rclone, wrapped in a small Express and PostgreSQL app that keeps notes, uploaded files and tick-box progress against every step. The app was built in about twenty hours across 9 and 10 December 2024, with the tick boxes finished on 12 December; the repository does not record whether the pilot itself was carried out.</p>
+<p>So there are two things to learn from here. One is the plan: how a Linux machine joins a Windows domain, boots its installer from the network, and is managed in bulk. The other is the tracker, whose short history is full of small, instructive mistakes: where data should live, what identifies a step, and what a web server should and should not hand out.</p>
+<p>Everything below comes from the commits, the plan pages and the code. The progress data (notes and tick boxes) exists only as database dumps, which I did not open, so this page says nothing about how far the pilot got. Where I explain how Active Directory, PAM, PXE or rclone work, or point out gaps in the plan, that is background knowledge and my reading of the relevant documentation, not something the repository shows being tried.</p>
+<div class="card idea"><span class="label">The one-line summary</span>
+A plan is only as good as its first test run, and a tracker is only as good as the identifiers it stores things under. Give every step one stable ID, keep secrets and data out of anything a web server serves, and test each part of a plan on one machine before trusting it on twenty.</div>
+
+<h2 id="plan">2. The plan in four phases</h2>
+<p>The whole plan arrived in the first commit (<code>e173a06</code>, 2024-12-09 22:11): an overview page and a detailed page for each phase, 32 files and about 3,000 lines. Each step has "More Info" panels with example commands and configuration. Later commits added note boxes, upload boxes and tick-box IDs to these pages.</p>
+<table>
+  <tr><th>Phase</th><th>Goal</th><th>Main steps</th></tr>
+  <tr><td>1. Preparation</td><td>An isolated test environment and the servers it needs</td><td>A separate VLAN and subnet for the 20 machines with DHCP from dnsmasq; a file server joined to AD with Samba and Winbind; a PXE server for network installs; Ansible on a control machine; checks before moving on</td></tr>
+  <tr><td>2. Implementation</td><td>Debian on all 20 machines, joined to AD</td><td>PXE install everywhere; Ansible installs Samba, Winbind and rclone and copies out <code>smb.conf</code>, PAM and NSS settings; join the domain; PAM creates home folders at first login; OneDrive through rclone</td></tr>
+  <tr><td>3. Testing</td><td>Real users on real machines</td><td>Test accounts or a few pupils log in on several machines; check home folders follow the user; check OneDrive; time logins and file transfers; gather feedback</td></tr>
+  <tr><td>4. Evaluation</td><td>Decide whether to go further</td><td>Group the feedback, review logs and timings against the earlier figures, decide, plan documentation and training</td></tr>
+</table>
+<p>A separate learning-objectives page lists five project-level objectives and a set for each phase, each with a date, a link and a comments box. The repository does not say whose objectives they are.</p>
+<h3>Network isolation and network installs</h3>
+<p>The pilot machines were to sit on their own <strong>VLAN</strong>: a separate network carved out of the same switches, so their traffic, and above all the pilot's own DHCP server, stay apart from the school's network. A second DHCP server on the main network would hand out wrong addresses to other machines, which is why Phase 1's final checks begin with the isolation.</p>
+<p><strong>PXE</strong> boot works like this: the network card's firmware asks DHCP for an address, the reply also names a boot server and a file, the card fetches that small boot program over TFTP, and the boot program loads the Debian installer, which then installs over the network. dnsmasq can provide the DHCP and TFTP parts on its own, which is why the plan uses it for both.</p>
+<h3>Managing twenty machines at once</h3>
+<p><strong>Ansible</strong> logs in to each machine over SSH and makes it match a description. The plan has the usual pieces: an inventory file listing the machines, SSH keys so no password is typed 20 times, an ad-hoc <code>ansible all -m ping</code> to prove it can reach them, a playbook that installs packages with the <code>apt</code> module, and a template (<code>smb.conf.j2</code>) whose task notifies a "restart samba" handler, so the service restarts only when the file actually changes.</p>
+
+<h2 id="ad">3. Joining Linux machines to Active Directory</h2>
+<h3>What has to happen</h3>
+<p>For a pupil to sign in to a Debian machine with the same username and password as on Windows, the machine needs four things, and in the plan Samba's Winbind provides all of them:</p>
+<ol>
+  <li><strong>Membership of the domain.</strong> <code>net ads join</code> creates a computer account in AD and stores a shared secret, so the machine can talk to the domain controllers over Kerberos. <code>smb.conf</code> needs <code>security = ads</code>, the domain's short name (<code>workgroup</code>) and its Kerberos <code>realm</code>.</li>
+  <li><strong>Users and groups (NSS).</strong> Linux finds users through the Name Service Switch. With <code>libnss-winbind</code> and <code>winbind</code> added to the <code>passwd</code> and <code>group</code> lines of <code>/etc/nsswitch.conf</code>, AD accounts appear to <code>getent passwd</code>, <code>ls -l</code> and everything else. The plan's checks are <code>wbinfo -u</code> (Winbind can list domain users) and <code>getent passwd</code> (the rest of the system can see them).</li>
+  <li><strong>Passwords (PAM).</strong> Logins are checked through PAM. <code>libpam-winbind</code> adds <code>pam_winbind.so</code>, which passes the password to AD.</li>
+  <li><strong>A home folder.</strong> The plan adds <code>pam_mkhomedir.so</code> to create one from <code>/etc/skel</code> on first login, and a <code>[homes]</code> share on the file server.</li>
+</ol>
+<p>The plan also sets <code>winbind use default domain = yes</code>, so pupils type a bare username rather than <code>DOMAIN\username</code>, and <code>template shell = /bin/bash</code>, the shell AD users get.</p>
+<h3>What the plan does not yet cover</h3>
+<p>These are from my reading of the Samba, PAM and Debian documentation, not from anything recorded in this repository.</p>
+<ul>
+  <li><strong>ID mapping.</strong> Linux identifies users by number (UID), AD by a long SID. Something has to turn one into the other, and the example <code>smb.conf</code> has no <code>idmap config</code> lines. Samba's guide to domain members treats them as required. A backend such as <code>rid</code> or <code>ad</code> is also what gives the same pupil the same UID on all twenty machines and on the file server, which shared home folders depend on.</li>
+  <li><strong>Mounting the home folders.</strong> <code>pam_mkhomedir</code> creates an empty <em>local</em> folder; it mounts nothing. For "the same files on every machine" (the plan's own Phase 3 test creates a file on one machine and looks for it on another), the server's <code>[homes]</code> share has to be mounted at login, for example with <code>pam_mount</code> or an automounter. As written, that test would fail.</li>
+  <li><strong>Editing PAM files by hand.</strong> On Debian, <code>/etc/pam.d/common-*</code> are maintained by <code>pam-auth-update</code>, which packages call when they are installed or upgraded. Lines added by hand inside its managed block can be rewritten; the supported route is to enable the profile (Winbind installs one).</li>
+</ul>
+<div class="card trap"><span class="label">Trap: an admin password on the command line</span>
+The plan's join command passes the administrator's name and password with <code>-U</code>, and its own note says to "use a vault for security". A password typed as an argument ends up in shell history and is visible to other users in the process list while the command runs; in an Ansible ad-hoc command it is also in the log. Let the command prompt for it, or keep it in Ansible Vault.</div>
+
+<h2 id="onedrive">4. OneDrive through rclone</h2>
+<p><code>rclone mount</code> presents a cloud store as an ordinary folder through FUSE: files are fetched when opened instead of being synchronised in advance. To reach a OneDrive it needs an OAuth token, which a person obtains by signing in through a browser during <code>rclone config</code>, and which is stored in that person's <code>rclone.conf</code>.</p>
+<p>That is the gap in the plan (again my reading, not something tried here): its example stores the configuration in one administrator's home folder, which gives access to one OneDrive. Every pupil would need their own token, created by signing in once on the machine, or something that hands one out at login. The example systemd unit has two further problems as written: systemd does not expand <code>~</code> in <code>ExecStart</code> (it offers <code>%h</code> for the home folder), and <code>--daemon</code> makes rclone's first process exit straight away, which systemd takes as the service ending. rclone's own documentation runs the mount with <code>Type=notify</code> and no <code>--daemon</code>.</p>
+
+<h2 id="tracker">5. The tracker app</h2>
+<h3>How it grew</h3>
+<figure class="chain"><ol>
+  <li><strong>Static pages</strong> (<code>e173a06</code>, 2024-12-09 22:11). Comment boxes saved in the browser's <code>localStorage</code>. A simpler page per phase, written alongside the detailed ones, was deleted about an hour later (<code>cc3ce51</code>, <code>1887620</code>).</li>
+  <li><strong>A notes box under every step</strong> (<code>5110fee</code>), at first in <code>localStorage</code>.</li>
+  <li><strong>A server and a database</strong> (<code>9150ddf</code>, 00:02). <code>plan/server.js</code> with Express and <code>pg</code>; notes moved to a PostgreSQL <code>notes</code> table.</li>
+  <li><strong>Saving fixed</strong> (<code>e6b7d15</code>, "note database working", 00:17). Saving on every keystroke became a save one second after typing stops, and a plain <code>INSERT</code> became an upsert. The same commit fixed the static-file path (below).</li>
+  <li><strong>File uploads</strong> (<code>d2dace1</code> to <code>91bbf39</code>, 01:15–03:18). <code>multer</code> stores the file in <code>uploads/</code> and a row in a <code>files</code> table; download and delete endpoints followed. The README, written at 00:26 (<code>cdf6c50</code>), still lists file upload as the next step.</li>
+  <li><strong>Learning objectives and tick boxes in the database</strong> (<code>b9acda8</code> to <code>4b4b6d2</code>, 05:43–17:46). Sequelize models, five numbered seed scripts written in twenty minutes (<code>cb3d163</code> to <code>209c233</code>), two alternative model files, then all of them deleted in <code>4b4b6d2</code> ("just need checkboxes working").</li>
+  <li><strong>Tick boxes working</strong> (<code>ed03d07</code>, 2024-12-12). The fix described below, shared page code moved into <code>phases.js</code>, and the database dumps committed.</li>
+</ol></figure>
+<h3>Saving as you type: debounce and upsert</h3>
+<p>The first database version (<code>9150ddf</code>) sent a request on every <code>input</code> event, and each request ran <code>INSERT INTO notes (phase, step, content)</code>. Typing one sentence created dozens of rows. <code>e6b7d15</code> fixed it twice over. A <strong>debounce</strong> restarts a one-second timer on every keystroke and only saves when the timer runs out, so a burst of typing becomes one request. An <strong>upsert</strong>, <code>INSERT … ON CONFLICT (phase, step) DO UPDATE SET content = EXCLUDED.content</code>, makes each save replace the step's note instead of adding another. The upsert needs a unique constraint on <code>(phase, step)</code>, which is why the README's set-up step mentions one.</p>
+<div class="card fact"><span class="label">Verified: what the fix changed</span>
+The diff of <code>e6b7d15</code> adds a <code>debounce(saveNote, 1000)</code> wrapper in <code>plan/add-step-notes.js</code> and changes the server's statement to <code>ON CONFLICT (phase, step) DO UPDATE</code>. The debounce cuts the number of requests; the upsert is what stops duplicate rows.</div>
+<h3>What is a step called?</h3>
+<p>By the end, the same step was identified in three different ways, depending on what was being stored:</p>
+<ul>
+  <li><strong>Notes</strong> use the phase number read from the page title with <code>/Phase (\d)/</code>, plus the <em>text of the step's heading</em>. Reword a heading and its note is orphaned.</li>
+  <li><strong>Uploaded files</strong> use the phase and the step <em>number</em> from <code>data-step-number</code> and the button's <code>uploadFile(1, 2)</code>. An upload also writes a placeholder note under that number, so the <code>notes</code> table holds keys of both kinds.</li>
+  <li><strong>Tick boxes</strong> use string IDs such as <code>sub-step-1-1-1</code>, added to every checkbox in <code>7e79583</code> ("added uid to each checkbox").</li>
+</ul>
+<div class="card trap"><span class="label">Trap: the page's IDs and the database's IDs did not match</span>
+After <code>7e79583</code> the page knew each tick box by a string like <code>sub-step-1-1-1</code>, but the Sequelize model's key was an auto-increment integer, and the update route looked boxes up with <code>findByPk(id)</code>. <code>ed03d07</code> ("tick boxes working") changed <code>Checkbox.stepId</code> from an <code>INTEGER</code> referencing <code>steps.id</code> to a <code>STRING</code> referencing <code>steps.stepId</code>, and made the routes look boxes up by that string. The HTML defines which steps exist, so the database has to use the HTML's names for them.</div>
+<p>The fix bought simplicity at a price. The earlier update route also marked a step complete when all its boxes were ticked, and a phase complete when all its steps were; that roll-up was removed. And the new <code>GET /api/checkboxes/:stepId</code> <em>creates</em> the step and checkbox rows if they do not exist, attaching every new step to phase 1 (<code>phaseId: 1, // Set the appropriate phaseId</code>), so merely opening a page writes to the database.</p>
+<h3>Two ways into one database</h3>
+<p>The notes and files tables are reached with hand-written SQL through <code>pg</code>; the phases, steps, checkboxes and learning objectives through the Sequelize ORM, which runs <code>sequelize.sync({ alter: true })</code> at every start-up and alters those tables to match the models. Only the Sequelize tables are defined anywhere in the code. The <code>notes</code> and <code>files</code> tables exist only in the database (and presumably the dumps), so the repository alone cannot rebuild them.</p>
+<div class="card trap"><span class="label">Trap: a dependency that was installed but never declared</span>
+<code>b9acda8</code> (2024-12-10 05:43) made <code>server.js</code> require Sequelize, but <code>sequelize</code> was only added to <code>plan/package.json</code> in <code>ed03d07</code>, two days later. For those two days it worked on the machine that already had it and would have failed after a fresh <code>npm install</code>. (The merit tracker had the same slip with <code>node-cron</code>.)</div>
+<h3>What the server hands out</h3>
+<p><code>9150ddf</code> served static files from <code>path.join(__dirname, 'plan')</code>, but <code>server.js</code> already lives in <code>plan/</code>, so it pointed at a <code>plan/plan</code> folder that did not exist. <code>e6b7d15</code> changed it to <code>express.static(__dirname)</code>, "the project root". That works, but the folder it serves also holds <code>server.js</code> and the model files (all three contain the database password), the database dumps in <code>plan/</code>, and, when the server is started from <code>plan/</code>, the <code>uploads/</code> folder. Anyone who can reach the port can download them. The comment on that line now says "Serve static files from the 'public' directory", which is not what it does.</p>
+<div class="card trap"><span class="label">Trap: serving the folder the code lives in</span>
+<code>express.static</code> hands out every file in its folder except dotfiles. Point it at a folder that holds only what browsers should see (a <code>public/</code> folder), and keep credentials in environment variables or an ignored <code>.env</code>, never in a served file. Here the fix for one bug (a wrong path) created a worse one, and the comment drifted away from the code.</div>
+<div class="card fact"><span class="label">Verified: one copy-paste slip in the upload boxes</span>
+In <code>plan/phase-1-detailed.html</code>, the "Browse" label of step 2 has <code>for="file-upload-1-1"</code>, so it opens step 1's hidden file input; step 2's "Upload" button then finds no file. The other 19 upload boxes are correct. With every page written out by hand, the same structure was edited in many places, which is also why the history has bulk-edit scripts: <code>sed</code> loops to rewrite links (<code>cd1f80a</code>) and a BeautifulSoup script to change the step boxes (<code>f72427e</code>), both later deleted.</div>
+
+<h2 id="traps">6. Traps, in one place</h2>
+<ul>
+  <li>Saving on every keystroke with a plain <code>INSERT</code> adds a row per keystroke; debounce the saves and upsert on a unique key (<code>e6b7d15</code>).</li>
+  <li>A path joined onto <code>__dirname</code> is relative to the file's own folder, not the project root (<code>9150ddf</code>).</li>
+  <li><code>express.static(__dirname)</code> serves the server's own source, its credentials and anything else in that folder (<code>e6b7d15</code> to today).</li>
+  <li>Database credentials written into <code>server.js</code>, <code>models.js</code> and <code>models/models-lo.js</code> stay in git history even after they are moved out.</li>
+  <li>A step was named three ways: heading text, step number and string ID. A database keyed on display text loses data when the text is edited.</li>
+  <li>The page's string IDs and the database's integer keys did not match until <code>ed03d07</code>.</li>
+  <li>A dependency used for two days before it was declared in <code>package.json</code> (<code>b9acda8</code> to <code>ed03d07</code>).</li>
+  <li>A <code>GET</code> that creates rows means reading a page changes the database.</li>
+  <li>The README went stale within an hour: written at 00:26, file uploads working by 01:41.</li>
+  <li>Hand-copied page structure leads to slips such as the mislabelled Browse button, and to bulk-edit scripts.</li>
+  <li>In the plan: an admin password on the command line; no ID mapping; <code>pam_mkhomedir</code> creates local folders rather than mounting the server's; hand edits to PAM files that Debian manages; one administrator's OneDrive token for everyone.</li>
+</ul>
+
+<h2 id="lessons">7. General lessons</h2>
+<div class="card idea"><span class="label">One stable ID per thing</span>
+Decide once what identifies a step (or a pupil, or a prize), make it independent of wording and position, and use it everywhere: in the HTML, in every table and in every API. Display text changes; IDs must not.</div>
+<div class="card idea"><span class="label">Serve a folder made for serving</span>
+A web server's static folder should contain only what any visitor may download. Source, configuration, dumps and uploads belong somewhere else.</div>
+<div class="card idea"><span class="label">Saving often needs two halves</span>
+Debouncing reduces how often you save; making the save an upsert makes it harmless to save again. Either alone leaves a problem.</div>
+<div class="card idea"><span class="label">Read the "how" before trusting the "what"</span>
+A plan can describe the right outcome ("home folders follow the user") with a mechanism that cannot deliver it (<code>pam_mkhomedir</code>). Its own test would have found the gap, which is the argument for running the test on one machine before the other nineteen.</div>
+<div class="card idea"><span class="label">Declare what you use</span>
+If the code needs a package, it goes in <code>package.json</code> in the same commit. "It works here" only proves the package is installed here.</div>
+
+<h2 id="results">8. Timeline and where things are stored</h2>
+<table>
+  <tr><th>When</th><th>Commits</th><th>What changed</th></tr>
+  <tr><td>2024-12-09 22:11</td><td><code>e173a06</code></td><td>The whole four-phase plan as static pages</td></tr>
+  <tr><td>22:34–23:26</td><td><code>cd1f80a</code> … <code>7614aac</code></td><td>Links fixed by script, per-step note boxes, old pages removed, npm project</td></tr>
+  <tr><td>2024-12-10 00:02–00:26</td><td><code>9150ddf</code>, <code>e6b7d15</code>, <code>cdf6c50</code></td><td>Server and PostgreSQL notes; debounce and upsert; README</td></tr>
+  <tr><td>01:15–03:28</td><td><code>d2dace1</code> … <code>b0ac0d0</code></td><td>File upload, download and delete on every phase page; learning-objectives page; menu</td></tr>
+  <tr><td>05:43–12:30</td><td><code>b9acda8</code> … <code>26d8b7f</code></td><td>Sequelize models; checkbox IDs; seed scripts and model variants; first SQL dump</td></tr>
+  <tr><td>17:46</td><td><code>4b4b6d2</code></td><td>"just need checkboxes working": the experiments deleted</td></tr>
+  <tr class="hl"><td>2024-12-12 15:22</td><td><code>ed03d07</code></td><td>"tick boxes working": string step IDs, shared page code, dependencies declared, dumps committed</td></tr>
+</table>
+<table>
+  <tr><th>What</th><th>Stored in</th><th>Keyed by</th></tr>
+  <tr><td>Notes under each step</td><td>PostgreSQL <code>notes</code> (via <code>pg</code>)</td><td>phase number + heading text</td></tr>
+  <tr><td>Uploaded files</td><td><code>uploads/</code> on disk + PostgreSQL <code>files</code></td><td>phase number + step number</td></tr>
+  <tr><td>Tick boxes</td><td>PostgreSQL <code>checkboxes</code> and <code>steps</code> (via Sequelize)</td><td>string ID from <code>data-id</code></td></tr>
+  <tr><td>Learning objectives</td><td>PostgreSQL <code>learning_objectives</code> (via Sequelize)</td><td>a number per objective</td></tr>
+  <tr class="hl"><td>The "Notes and Comments" box on each page</td><td>the browser's <code>localStorage</code></td><td>page name; lives in one browser only</td></tr>
+</table>
+
+<h2 id="test">9. Test yourself</h2>
+<details><summary>What four things does a Linux machine need before an AD user can sign in to it?</summary>
+Membership of the domain (a computer account, from <code>net ads join</code>), a way to look up users and groups (NSS, with <code>winbind</code> in <code>nsswitch.conf</code>), a way to check passwords (PAM, with <code>pam_winbind</code>), and a home folder.</details>
+<details><summary>What do <code>wbinfo -u</code> and <code>getent passwd</code> each prove?</summary>
+<code>wbinfo -u</code> proves Winbind itself can list domain users. <code>getent passwd</code> proves the rest of the system can see them through NSS. The first can work while the second does not, if <code>nsswitch.conf</code> is wrong.</details>
+<details><summary>Why does a domain member need an ID-mapping backend such as <code>rid</code>?</summary>
+Linux uses numeric UIDs and AD uses SIDs. The backend turns one into the other, and a deterministic one gives the same user the same UID on every machine and on the file server, which shared home folders depend on.</details>
+<details><summary>The plan's PAM settings include <code>pam_mkhomedir</code>. Would a file made on one machine appear on another?</summary>
+No. <code>pam_mkhomedir</code> creates an empty local folder from <code>/etc/skel</code>; it mounts nothing. The server's share has to be mounted at login (for example with <code>pam_mount</code> or an automounter).</details>
+<details><summary>How does a PXE boot reach the Debian installer?</summary>
+The network card asks DHCP for an address; the reply also names a boot server and file; the card downloads that boot program over TFTP; it loads the installer, which installs over the network. dnsmasq can supply both DHCP and TFTP.</details>
+<details><summary>Why put the pilot machines on their own VLAN?</summary>
+To keep their traffic, and especially the pilot's own DHCP server, away from the school network, where a second DHCP server would hand out wrong addresses.</details>
+<details><summary>Why would one shared <code>rclone.conf</code> not give every pupil their own OneDrive?</summary>
+The OneDrive token in it belongs to whoever signed in when it was created. Each pupil needs their own token, created by signing in themselves.</details>
+<details><summary>Typing a note created dozens of rows. What two changes fixed it, and what does each do?</summary>
+A one-second debounce, so a burst of typing sends one save; and an upsert, <code>ON CONFLICT (phase, step) DO UPDATE</code>, so a save replaces the step's note instead of adding a row. The upsert needs a unique constraint on <code>(phase, step)</code>.</details>
+<details><summary>Why is keying notes on the heading text fragile?</summary>
+If a heading is reworded, the next page load looks for a different key and the old note is orphaned. A stable ID that never appears on screen avoids it.</details>
+<details><summary>What did <code>express.static(__dirname)</code> in <code>plan/server.js</code> expose?</summary>
+Every non-dot file in <code>plan/</code>: the server's source and model files with the database password, the database dumps and, if started from <code>plan/</code>, the uploaded files.</details>
+<details><summary>Why did the tick boxes not save until <code>ed03d07</code>?</summary>
+The page identified each box by a string such as <code>sub-step-1-1-1</code>, while the database model used an integer primary key looked up with <code>findByPk</code>. The fix keyed checkboxes on the string <code>stepId</code>.</details>
+
+<h2 id="next">10. Still to do</h2>
+<ul>
+  <li><strong>Find out how far the pilot got.</strong> The notes and tick boxes are in the database dumps (<code>setup_linux_notes_dump.sql</code>, <code>plan/setup_linux_notes.dump</code>); this page was written without opening them.</li>
+  <li><strong>Before running the tracker again:</strong> move the database settings into environment variables, serve only a <code>public/</code> folder, and change the database password, which has been in git since <code>9150ddf</code>.</li>
+  <li><strong>Before trying the plan:</strong> add an <code>idmap config</code> backend with ranges; choose how home folders are mounted (<code>pam_mount</code>, an automounter or NFS) instead of relying on <code>pam_mkhomedir</code>; enable PAM modules with <code>pam-auth-update</code>; decide how each pupil authorises OneDrive, and fix the rclone unit (<code>%h</code>, <code>Type=notify</code>, no <code>--daemon</code>). Try it all on one machine first.</li>
+  <li><strong>In the tracker:</strong> give every step one ID and use it for notes, files and tick boxes; add the SQL that creates <code>notes</code> and <code>files</code> to the repository; correct the step 1.2 Browse label; stop <code>GET</code> requests creating rows.</li>
+</ul>
+
+<h2 id="glossary">11. Glossary</h2>
+<dl class="glossary">
+  <dt>Active Directory (AD)</dt><dd>Microsoft's directory of users, groups and computers, which also checks passwords (using Kerberos) for every machine in the domain.</dd>
+  <dt>Domain member</dt><dd>A computer with its own account in AD, allowed to ask the domain controllers to check users' passwords.</dd>
+  <dt>Kerberos realm</dt><dd>The Kerberos name for the AD domain, usually its DNS name in capitals; set as <code>realm</code> in <code>smb.conf</code>.</dd>
+  <dt>Samba / Winbind</dt><dd>Samba is the open-source implementation of Windows file sharing and domain protocols; <code>winbindd</code> is the part that makes AD users and groups appear as Linux users and groups.</dd>
+  <dt>NSS (Name Service Switch)</dt><dd>How Linux looks up users, groups and hosts; <code>/etc/nsswitch.conf</code> lists the sources to ask, such as <code>files</code> and <code>winbind</code>.</dd>
+  <dt>PAM</dt><dd>Pluggable Authentication Modules: the configurable chain that decides how a login is checked and what happens when a session opens.</dd>
+  <dt>ID mapping (idmap)</dt><dd>Turning AD's SIDs into Linux UIDs and GIDs; a deterministic backend gives the same numbers on every machine.</dd>
+  <dt>VLAN</dt><dd>A separate logical network carried on the same physical switches.</dd>
+  <dt>PXE</dt><dd>Booting a computer from the network: DHCP gives the address and the boot file's location, TFTP delivers it.</dd>
+  <dt>dnsmasq</dt><dd>A small server that can provide DHCP, DNS and TFTP together.</dd>
+  <dt>Ansible</dt><dd>A tool that configures many machines over SSH from an inventory and playbooks, so every machine ends up the same.</dd>
+  <dt>rclone mount</dt><dd>Shows a cloud store such as OneDrive as a local folder through FUSE, fetching files when they are opened.</dd>
+  <dt>OAuth token</dt><dd>A credential a service issues after a person signs in, letting a program act for that person without their password.</dd>
+  <dt>Debounce</dt><dd>Waiting until events stop arriving for a set time before acting, so a burst of events causes one action.</dd>
+  <dt>Upsert</dt><dd>Insert a row, or update it if one with the same key already exists (<code>INSERT … ON CONFLICT … DO UPDATE</code> in PostgreSQL).</dd>
+  <dt>ORM (Sequelize)</dt><dd>A library that maps database tables to JavaScript objects; <code>sync({ alter: true })</code> changes tables to match the models when the app starts.</dd>
+  <dt><code>localStorage</code></dt><dd>Storage inside one browser on one machine; nothing in it reaches the server or another device.</dd>
+</dl>
+</main>
+<footer><div class="inner">Part of the "what I have learnt" collection, one page per project, all sharing <code>learnt.css</code>. Reconstructed 2026-10-06 from the repository's history, plan pages and code; the database dumps were not opened.</div></footer>
+</body>
+</html>
