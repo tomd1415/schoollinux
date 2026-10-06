@@ -7,7 +7,7 @@ The Classroom Linux Pilot is a web-based application designed to facilitate the 
 - **Interactive Checklists**: Allows users to track progress through checkboxes for each step within a phase.
 - **Comment Sections**: Enables users to add detailed notes and feedback for each phase and step.
 - **Resource Toggles**: Provides expandable sections with additional information and helpful commands.
-- **Persistent Storage**: Saves notes and comments to a PostgreSQL database for easy retrieval and management.
+- **Persistent Storage**: Saves step notes, uploaded-file records, tick-box progress and learning objectives to a PostgreSQL database for easy retrieval and management (the page-level comment boxes are kept in the browser's localStorage).
 
 ## Technologies Used
 ### Frontend:
@@ -33,15 +33,15 @@ The Classroom Linux Pilot is a web-based application designed to facilitate the 
 
 ### Steps
 1. **Clone the Repository**
-2. **Install Dependencies**
+2. **Install Dependencies** (the app lives in `plan/`: `cd plan && npm install`)
 3. **Setup PostgreSQL Database**
     - Create a new PostgreSQL database:
-    - Create the notes table with a unique constraint:
+    - Create the `notes` table (columns `phase`, `step`, `content`, with a unique constraint on `(phase, step)`) and the `files` table (`id`, `phase`, `step`, `filename`, `filepath`). The Sequelize tables (`phases`, `steps`, `checkboxes`, `learning_objectives`) are created by `plan/models.js` when the server starts.
 4. **Configure Environment Variables**
-    - Update the database configuration in `server.js`:
-5. **Run the Server**
+    - Update the database configuration in `plan/server.js` (the `pg` pool) and the connection string in `plan/models.js` (Sequelize). Only `PORT` is read from the environment.
+5. **Run the Server** (`node server.js` from `plan/`; there is no `npm start` script)
 6. **Access the Application**
-    - Open your browser and navigate to `http://localhost:3000` to start using the Classroom Linux Pilot application.
+    - Open your browser and navigate to `http://localhost:3500` (or the `PORT` you set) to start using the Classroom Linux Pilot application.
 
 ## Usage
 - **Navigate Through Phases**: Use the navigation bar to access detailed instructions for each phase.
@@ -59,6 +59,8 @@ The project currently supports the following functionalities:
 
 ## Next Steps
 ### Implement File Upload Functionality
+*Since implemented: upload, download and delete on every phase page (files go to `uploads/`, records to the `files` table). The file-type validation listed under Security Measures has not been done.*
+
 The next phase of development involves adding the ability to upload files associated with each step or phase. This feature will be handled through a dedicated upload box placed next to each respective step or phase. The implementation will include:
 
 #### Frontend Enhancements:
@@ -94,11 +96,3 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 
 ## Contact
 For any questions or feedback, please contact the project maintainers at support@classroomlinuxpilot.com.
-
-CREATE TABLE notes (
-    id SERIAL PRIMARY KEY,
-    phase_id INTEGER REFERENCES phases(id) ON DELETE CASCADE,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
